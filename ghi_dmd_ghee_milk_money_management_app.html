@@ -1,0 +1,1463 @@
+<!DOCTYPE html>
+<html lang="bn" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHI DMD - ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts - Hind Siliguri & Inter -->
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              500: '#f59e0b',
+              600: '#d97706',
+              700: '#b45309',
+              800: '#92400e',
+              900: '#78350f',
+            },
+            milk: {
+              100: '#f8fafc',
+              200: '#e2e8f0',
+              800: '#1e293b',
+              900: '#0f172a'
+            }
+          },
+          fontFamily: {
+            sans: ['Hind Siliguri', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Hind Siliguri', 'Inter', sans-serif;
+    }
+    /* Milk & Cow Theme Overlay Background */
+    .app-bg-light {
+      background: linear-gradient(rgba(255, 255, 255, 0.92), rgba(248, 250, 252, 0.95)), 
+                  url('https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?auto=format&fit=crop&w=1600&q=80') center/cover fixed;
+    }
+    .app-bg-dark {
+      background: linear-gradient(rgba(15, 23, 42, 0.94), rgba(15, 23, 42, 0.97)), 
+                  url('https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?auto=format&fit=crop&w=1600&q=80') center/cover fixed;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(217, 119, 6, 0.5);
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body class="app-bg-dark text-slate-800 dark:text-slate-100 min-h-screen transition-colors duration-200" id="bodyApp">
+
+  <!-- Alert / Notification Toast -->
+  <div id="toast" class="fixed top-5 right-5 z-50 hidden transition-all duration-300 transform translate-y-[-20px] opacity-0 max-w-md">
+    <div id="toastContent" class="flex items-center p-4 rounded-xl shadow-2xl text-white font-medium border border-white/10"></div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER / NAVIGATION BAR -->
+    <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-amber-500/20 sticky top-0 z-40 px-4 py-3 shadow-md">
+      <div class="max-w-7xl mx-auto flex items-center justify-between">
+        
+        <!-- Logo & Branding -->
+        <div class="flex items-center space-x-3">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-yellow-400 flex items-center justify-center text-white shadow-lg shadow-amber-500/30 font-extrabold text-xl">
+            <i class="fa-solid fa-cow"></i>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold tracking-tight text-amber-600 dark:text-amber-400 leading-tight">GHI DMD</h1>
+            <p class="text-[10px] text-slate-500 dark:text-slate-400 font-medium">ঘি ও দুধ ক্যাশ ট্র্যাকার</p>
+          </div>
+        </div>
+
+        <!-- Controls (Language, Theme, Admin, Logout) -->
+        <div class="flex items-center space-x-2 sm:space-x-3">
+          
+          <!-- Language Toggle Button -->
+          <button id="langToggleBtn" onclick="toggleLanguage()" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-300 border border-amber-500/30 transition">
+            <i class="fa-solid fa-globe mr-1"></i> <span id="langText">বাংলা</span>
+          </button>
+
+          <!-- Dark/Light Theme Toggle -->
+          <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:text-amber-500 transition">
+            <i class="fa-solid fa-sun dark:hidden text-amber-500"></i>
+            <i class="fa-solid fa-moon hidden dark:block text-amber-400"></i>
+          </button>
+
+          <!-- Hosting / APK Installation Guide Button -->
+          <button onclick="openGuideModal()" class="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20 transition" title="App Installation Guide">
+            <i class="fa-solid fa-mobile-screen-button"></i>
+          </button>
+
+          <!-- Admin Panel Button (Visible when logged in or explicitly clicked) -->
+          <button id="adminNavBtn" onclick="openAdminModal()" class="hidden px-3 py-1.5 rounded-lg text-xs font-bold bg-purple-600 hover:bg-purple-700 text-white shadow transition">
+            <i class="fa-solid fa-user-shield mr-1"></i> <span data-i18n="adminPanel">এডমিন প্যানেল</span>
+          </button>
+
+          <!-- User Profile / Logout Button -->
+          <div id="userInfoSection" class="hidden flex items-center space-x-2">
+            <span id="userNameDisplay" class="text-xs font-semibold px-2 py-1 bg-amber-100 dark:bg-slate-800 rounded-lg text-amber-800 dark:text-amber-300 max-w-[100px] truncate"></span>
+            <button onclick="handleLogout()" class="p-2 rounded-lg bg-red-500/10 text-red-600 dark:text-red-400 hover:bg-red-500/20 transition" title="লগআউট">
+              <i class="fa-solid fa-right-from-bracket"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- MAIN BODY CONTENT -->
+    <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6">
+
+      <!-- AUTHENTICATION CONTAINER (LOGIN / REGISTRATION) -->
+      <div id="authContainer" class="max-w-md mx-auto my-8">
+        
+        <!-- CARD CONTAINER -->
+        <div class="bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border border-amber-500/20 rounded-2xl shadow-2xl p-6 sm:p-8">
+          
+          <!-- Header Logo in Auth -->
+          <div class="text-center mb-6">
+            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-400 mx-auto flex items-center justify-center text-white shadow-xl shadow-amber-500/30 text-3xl mb-3">
+              <i class="fa-solid fa-whiskey-glass"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-slate-800 dark:text-white">GHI DMD</h2>
+            <p class="text-xs text-amber-600 dark:text-amber-400 mt-1" data-i18n="tagline">সহজ ও নির্ভুল টাকা সংগ্রহের হিসাব অ্যাপ</p>
+          </div>
+
+          <!-- Auth Switcher Tabs -->
+          <div class="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl mb-6">
+            <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow transition" data-i18n="login">লগইন</button>
+            <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 transition" data-i18n="register">রেজিস্ট্রেশন</button>
+          </div>
+
+          <!-- LOGIN FORM -->
+          <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="mobileNumber">মোবাইল নম্বর</label>
+              <div class="relative">
+                <i class="fa-solid fa-phone absolute left-3 top-3 text-slate-400 text-xs"></i>
+                <input type="tel" id="loginPhone" required placeholder="01700000000" class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="password">পাসওয়ার্ড</label>
+              <div class="relative">
+                <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-xs"></i>
+                <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginEye')" class="absolute right-3 top-2.5 text-slate-400 hover:text-amber-500">
+                  <i id="loginEye" class="fa-solid fa-eye text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-sm shadow-lg shadow-amber-500/20 transition transform active:scale-95" data-i18n="submitLogin">
+              লগইন করুন
+            </button>
+          </form>
+
+          <!-- REGISTRATION FORM -->
+          <form id="registerForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
+            <div>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="fullName">পূর্ণ নাম</label>
+              <div class="relative">
+                <i class="fa-solid fa-user absolute left-3 top-3 text-slate-400 text-xs"></i>
+                <input type="text" id="regName" required placeholder="মোঃ আব্দুর রহিম" class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="mobileNumber">মোবাইল নম্বর</label>
+              <div class="relative">
+                <i class="fa-solid fa-phone absolute left-3 top-3 text-slate-400 text-xs"></i>
+                <input type="tel" id="regPhone" required placeholder="01332858038" class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1">
+                <span data-i18n="emailOptional">ইমেইল (ঐচ্ছিক)</span>
+              </label>
+              <div class="relative">
+                <i class="fa-solid fa-envelope absolute left-3 top-3 text-slate-400 text-xs"></i>
+                <input type="email" id="regEmail" placeholder="example@gmail.com" class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="password">পাসওয়ার্ড</label>
+              <div class="relative">
+                <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-xs"></i>
+                <input type="password" id="regPassword" required placeholder="••••••••" class="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+                <button type="button" onclick="togglePasswordVisibility('regPassword', 'regEye')" class="absolute right-3 top-2.5 text-slate-400 hover:text-amber-500">
+                  <i id="regEye" class="fa-solid fa-eye text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- OTP Verification Simulation Box -->
+            <div id="otpSection" class="hidden bg-amber-50 dark:bg-amber-950/40 p-3 rounded-xl border border-amber-300 dark:border-amber-800 text-center">
+              <p class="text-xs text-amber-800 dark:text-amber-300 mb-2" data-i18n="otpInfo">ফোনে প্রেরিত ৬ ডিজিটের ওটিপি കോড লিখুন (পরীক্ষার কোড: <span class="font-bold">123456</span>)</p>
+              <input type="text" id="regOtp" maxlength="6" placeholder="123456" class="w-32 text-center tracking-widest font-bold py-1.5 rounded-lg border border-amber-400 bg-white dark:bg-slate-800 text-base">
+            </div>
+
+            <button type="button" id="sendOtpBtn" onclick="triggerOtpSimulation()" class="w-full py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-200 font-medium text-xs hover:bg-slate-300 transition">
+              <i class="fa-solid fa-comment-sms mr-1"></i> <span data-i18n="sendOtp">ওটিপি (OTP) ভেরিফাই করুন</span>
+            </button>
+
+            <button type="submit" id="submitRegBtn" disabled class="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 text-white font-bold text-sm shadow-lg opacity-50 cursor-not-allowed transition transform active:scale-95" data-i18n="submitReg">
+              অ্যাকাউন্ট তৈরি করুন
+            </button>
+          </form>
+
+          <!-- Mandatory Notice / Contact Box -->
+          <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 text-center">
+            <div class="p-3 bg-amber-500/10 rounded-xl border border-amber-500/20 text-xs text-amber-800 dark:text-amber-300 leading-relaxed font-medium">
+              <i class="fa-solid fa-triangle-exclamation mr-1 text-amber-600"></i>
+              <span>NB: যেকোনো সমস্যা বা Admin Approval এর জন্য যোগাযোগ করুন: <strong>01332858038</strong></span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+
+      <!-- DASHBOARD (VISIBLE WHEN LOGGED IN & APPROVED) -->
+      <div id="dashboardContainer" class="hidden space-y-6">
+
+        <!-- DASHBOARD TOP STATS CARD -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          <!-- Stat 1 -->
+          <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/20 shadow-md flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="totalCustomers">মোট গ্রাহক / কলাম</p>
+              <h3 id="statTotalPersons" class="text-2xl font-black text-slate-800 dark:text-white mt-1">0 / 100</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-users"></i>
+            </div>
+          </div>
+
+          <!-- Stat 2 -->
+          <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/20 shadow-md flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="totalGiven">মোট জমা টাকা</p>
+              <h3 id="statTotalGiven" class="text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1">৳ 0</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-money-bill-wave"></i>
+            </div>
+          </div>
+
+          <!-- Stat 3 -->
+          <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/20 shadow-md flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="totalReturned">মোট ফেরত টাকা</p>
+              <h3 id="statTotalReturned" class="text-2xl font-black text-rose-600 dark:text-rose-400 mt-1">৳ 0</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-rose-500/10 text-rose-500 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-hand-holding-dollar"></i>
+            </div>
+          </div>
+
+          <!-- Stat 4 -->
+          <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/20 shadow-md flex items-center justify-between">
+            <div>
+              <p class="text-xs font-semibold text-slate-500 dark:text-slate-400" data-i18n="netBalance">নিট নিট সংগ্রহ</p>
+              <h3 id="statNetBalance" class="text-2xl font-black text-amber-600 dark:text-amber-400 mt-1">৳ 0</h3>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center text-xl">
+              <i class="fa-solid fa-vault"></i>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- ACTION BAR (SEARCH & ADD PERSON) -->
+        <div class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md p-4 rounded-2xl border border-amber-500/20 shadow-md flex flex-col md:flex-row gap-4 items-center justify-between">
+          
+          <!-- Search Box -->
+          <div class="relative w-full md:w-80">
+            <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-3.5 text-slate-400 text-sm"></i>
+            <input type="text" id="searchInput" oninput="renderPersonColumns()" placeholder="নাম বা মোবাইল নম্বর দিয়ে খুঁজুন..." data-i18n-ph="searchPlaceholder" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm focus:ring-2 focus:ring-amber-500 outline-none">
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+            
+            <button onclick="openAddPersonModal()" class="flex-1 md:flex-none px-4 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs sm:text-sm shadow-md transition flex items-center justify-center space-x-2">
+              <i class="fa-solid fa-user-plus"></i>
+              <span data-i18n="addCustomer">নতুন গ্রাহক যোগ করুন</span>
+            </button>
+
+            <button onclick="exportDataJSON()" class="px-3 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-700 dark:text-slate-300 font-semibold text-xs transition" title="ডাটা ব্যাকআপ বা এক্সপোর্ট">
+              <i class="fa-solid fa-download mr-1"></i> <span data-i18n="backup">ব্যাকআপ</span>
+            </button>
+
+            <button onclick="triggerImportJSON()" class="px-3 py-2.5 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-700 dark:text-slate-300 font-semibold text-xs transition" title="ডাটা ইমপোর্ট">
+              <i class="fa-solid fa-upload mr-1"></i> <span data-i18n="restore">রিস্টোর</span>
+            </button>
+            <input type="file" id="importFileInput" onchange="importDataJSON(event)" class="hidden" accept=".json">
+
+          </div>
+        </div>
+
+        <!-- PERSON COLUMNS GRID (UP TO 100+ PERSONS) -->
+        <div>
+          <div class="flex items-center justify-between mb-3 px-1">
+            <h3 class="text-lg font-bold text-slate-800 dark:text-slate-100 flex items-center">
+              <i class="fa-solid fa-address-book text-amber-500 mr-2"></i>
+              <span data-i18n="customerColumns">গ্রাহকদের হিসাব কলাম তালিকা</span>
+            </h3>
+            <span class="text-xs text-slate-500 font-medium" id="personCountBadge">0 জন</span>
+          </div>
+
+          <!-- Scrollable Columns Grid -->
+          <div id="personColumnsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+            <!-- Dynamic Customer Columns will render here -->
+          </div>
+
+          <!-- Empty State -->
+          <div id="emptyState" class="hidden text-center py-12 bg-white/50 dark:bg-slate-900/50 rounded-2xl border border-dashed border-slate-300 dark:border-slate-800">
+            <i class="fa-solid fa-users-slash text-4xl text-slate-400 mb-3"></i>
+            <p class="text-slate-500 font-medium text-sm" data-i18n="noCustomersFound">কোনো গ্রাহক পাওয়া যায়নি। নতুন গ্রাহক যোগ করুন!</p>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+
+    <!-- FOOTER WITH CREDITS -->
+    <footer class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-t border-amber-500/20 py-4 px-4 text-center mt-8">
+      <p class="text-xs font-semibold text-slate-600 dark:text-slate-400">
+        &copy; <span id="currentYear"></span> GHI DMD App. All Rights Reserved.
+      </p>
+      <p class="text-[11px] text-amber-600 dark:text-amber-400 font-bold mt-0.5">
+        Created by GHI DMD Admin
+      </p>
+    </footer>
+
+  </div>
+
+
+  <!-- MODAL: ADD / EDIT PERSON -->
+  <div id="personModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full border border-amber-500/30 p-6 shadow-2xl relative animate-fadeIn">
+      <button onclick="closePersonModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <h3 id="personModalTitle" class="text-lg font-bold text-slate-800 dark:text-white mb-4 flex items-center">
+        <i class="fa-solid fa-user-plus text-amber-500 mr-2"></i>
+        <span>নতুন গ্রাহক যোগ করুন</span>
+      </h3>
+
+      <form id="personForm" onsubmit="savePersonForm(event)" class="space-y-4">
+        <input type="hidden" id="personEditId">
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="personName">গ্রাহকের নাম</label>
+          <input type="text" id="personNameInput" required placeholder="উদাহরণ: কামাল হোসেন" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="personPhone">মোবাইল নম্বর</label>
+          <input type="tel" id="personPhoneInput" placeholder="01711223344" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="personAddress">ঠিকানা / রুট (ঐচ্ছিক)</label>
+          <input type="text" id="personAddressInput" placeholder="যেমন: নতুন বাজার, ঘি মহল" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm outline-none focus:ring-2 focus:ring-amber-500">
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closePersonModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300" data-i18n="cancel">বাতিল</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow" data-i18n="save">সংরক্ষণ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- MODAL: ADD TRANSACTION & DENOMINATION CALCULATOR -->
+  <div id="txModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-lg w-full border border-amber-500/30 p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+      
+      <button onclick="closeTxModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="mb-4">
+        <span class="text-xs font-bold text-amber-500 uppercase tracking-wider" data-i18n="addPayment">টাকা জমা হিসাব</span>
+        <h3 id="txCustomerName" class="text-xl font-bold text-slate-800 dark:text-white"></h3>
+      </div>
+
+      <form id="txForm" onsubmit="saveTransaction(event)" class="space-y-4">
+        <input type="hidden" id="txPersonId">
+
+        <!-- Denomination Note Calculator Table -->
+        <div class="bg-slate-50 dark:bg-slate-800/80 p-4 rounded-xl border border-slate-200 dark:border-slate-700 space-y-3">
+          <p class="text-xs font-bold text-slate-700 dark:text-slate-200 border-b pb-1 border-slate-200 dark:border-slate-700" data-i18n="noteCalculator">
+            নোটের ধরন ও সংখ্যা (Denomination Calculator)
+          </p>
+
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            
+            <!-- 50 Tk -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500">৫০ টাকার নোট</label>
+              <div class="flex items-center space-x-1 mt-0.5">
+                <span class="text-xs font-bold text-amber-600">৳৫০ x</span>
+                <input type="number" id="note50" min="0" value="0" oninput="calculateNotes()" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-center text-sm font-bold">
+              </div>
+            </div>
+
+            <!-- 100 Tk -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500">১০০ টাকার নোট</label>
+              <div class="flex items-center space-x-1 mt-0.5">
+                <span class="text-xs font-bold text-amber-600">৳১০০ x</span>
+                <input type="number" id="note100" min="0" value="0" oninput="calculateNotes()" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-center text-sm font-bold">
+              </div>
+            </div>
+
+            <!-- 200 Tk -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500">২০০ টাকার নোট</label>
+              <div class="flex items-center space-x-1 mt-0.5">
+                <span class="text-xs font-bold text-amber-600">৳২০০ x</span>
+                <input type="number" id="note200" min="0" value="0" oninput="calculateNotes()" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-center text-sm font-bold">
+              </div>
+            </div>
+
+            <!-- 500 Tk -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500">৫০০ টাকার নোট</label>
+              <div class="flex items-center space-x-1 mt-0.5">
+                <span class="text-xs font-bold text-amber-600">৳৫০০ x</span>
+                <input type="number" id="note500" min="0" value="0" oninput="calculateNotes()" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-center text-sm font-bold">
+              </div>
+            </div>
+
+            <!-- 1000 Tk -->
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-500">১০০০ টাকার নোট</label>
+              <div class="flex items-center space-x-1 mt-0.5">
+                <span class="text-xs font-bold text-amber-600">৳১০০০ x</span>
+                <input type="number" id="note1000" min="0" value="0" oninput="calculateNotes()" class="w-full px-2 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-center text-sm font-bold">
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Total Given Auto Calculation -->
+          <div class="pt-2 border-t border-slate-200 dark:border-slate-700 flex justify-between items-center">
+            <span class="text-xs font-bold text-slate-600 dark:text-slate-300" data-i18n="givenTotal">মোট দেওয়া টাকা:</span>
+            <span id="calculatedGivenDisplay" class="text-lg font-black text-emerald-600 dark:text-emerald-400">৳ 0</span>
+          </div>
+        </div>
+
+        <!-- Return Amount Option -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="returnAmount">ফেরত দেওয়া টাকা (Change)</label>
+            <input type="number" id="txReturnAmount" min="0" value="0" oninput="calculateNotes()" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm font-bold text-rose-500 outline-none">
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="netReceived">নিট জমা টাকা (Net)</label>
+            <input type="text" id="txNetReceived" readonly value="৳ 0" class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-200 dark:bg-slate-800 text-sm font-black text-amber-600 dark:text-amber-400 outline-none">
+          </div>
+        </div>
+
+        <!-- Note / Remarks -->
+        <div>
+          <label class="block text-xs font-medium text-slate-600 dark:text-slate-300 mb-1" data-i18n="remarks">মন্তব্য / বিবরণ (যেমন: ২ কেজি ঘি)</label>
+          <input type="text" id="txRemarks" placeholder="ঐচ্ছিক বিবরণ..." class="w-full px-3 py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm outline-none">
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2">
+          <button type="button" onclick="closeTxModal()" class="px-4 py-2 rounded-xl text-xs font-semibold bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300" data-i18n="cancel">বাতিল</button>
+          <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 text-white shadow" data-i18n="saveTx">লেনদেন যোগ করুন</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- MODAL: TRANSACTION HISTORY DETAILS FOR A PERSON -->
+  <div id="historyModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full border border-amber-500/30 p-6 shadow-2xl relative max-h-[90vh] flex flex-col">
+      
+      <button onclick="closeHistoryModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="mb-4">
+        <span class="text-xs font-bold text-amber-500 uppercase tracking-wider" data-i18n="fullHistory">বিস্তারিত লেনদেন ইতিহাস</span>
+        <h3 id="historyCustomerName" class="text-xl font-bold text-slate-800 dark:text-white"></h3>
+        <p id="historyCustomerPhone" class="text-xs text-slate-400"></p>
+      </div>
+
+      <!-- History List -->
+      <div id="historyList" class="flex-grow overflow-y-auto space-y-3 custom-scrollbar pr-1 my-2">
+        <!-- Transactions will render dynamically -->
+      </div>
+
+      <div class="pt-3 border-t border-slate-200 dark:border-slate-800 flex justify-between items-center">
+        <button onclick="printCustomerHistory()" class="px-4 py-2 rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <i class="fa-solid fa-print mr-1"></i> প্রিন্ট / PDF
+        </button>
+        <button onclick="closeHistoryModal()" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold shadow">
+          বন্ধ করুন
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL: ADMIN PANEL (APPROVAL SYSTEM) -->
+  <div id="adminModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-xl w-full border border-purple-500/30 p-6 shadow-2xl relative">
+      <button onclick="closeAdminModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center space-x-3 mb-6">
+        <div class="w-10 h-10 rounded-xl bg-purple-600 text-white flex items-center justify-center text-lg">
+          <i class="fa-solid fa-user-shield"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white" data-i18n="adminPanel">এডমিন এডমিন অনুমোদন প্যানেল</h3>
+          <p class="text-xs text-purple-500 font-medium">GHI DMD Admin Access (01332858038)</p>
+        </div>
+      </div>
+
+      <!-- User List awaiting approval -->
+      <div id="adminUserList" class="space-y-3 max-h-80 overflow-y-auto custom-scrollbar">
+        <!-- Render Pending / Approved Users -->
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MODAL: FREE APK & HOSTING INSTRUCTIONS GUIDE -->
+  <div id="guideModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full border border-amber-500/30 p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto custom-scrollbar">
+      <button onclick="closeGuideModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600 dark:hover:text-white">
+        <i class="fa-solid fa-xmark text-lg"></i>
+      </button>
+
+      <div class="flex items-center space-x-3 mb-4">
+        <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xl">
+          <i class="fa-solid fa-mobile-screen-button"></i>
+        </div>
+        <div>
+          <h3 class="text-lg font-bold text-slate-800 dark:text-white">মোবাইলে অ্যাপ ইনস্টল ও হোস্টিং গাইড</h3>
+          <p class="text-xs text-amber-500 font-medium">GHI DMD Web App to Mobile APK</p>
+        </div>
+      </div>
+
+      <div class="space-y-4 text-xs text-slate-600 dark:text-slate-300 leading-relaxed">
+        
+        <div class="p-3 bg-amber-50 dark:bg-amber-950/40 rounded-xl border border-amber-300 dark:border-amber-800">
+          <h4 class="font-bold text-amber-800 dark:text-amber-300 text-sm mb-1">১. ফ্রিতে অনলাইনে হোস্টিং করার উপায় (Free Hosting):</h4>
+          <p>আপনার এই অ্যাপের একক `index.html` ফাইলটি নিচের যেকোনো ফ্রি সার্ভারে হোস্টিং করতে পারবেন:</p>
+          <ul class="list-disc pl-5 mt-1 space-y-1">
+            <li><strong>Netlify:</strong> <a href="https://app.netlify.com/drop" target="_blank" class="text-blue-500 underline">app.netlify.com/drop</a> ওয়েবসাইটে গিয়ে ফাইল ড্রপ করে ২ সেকেন্ডে ফ্রি লিঙ্ক পাবেন।</li>
+            <li><strong>Vercel:</strong> <a href="https://vercel.com" target="_blank" class="text-blue-500 underline">vercel.com</a> এ ফ্রিতে ফাইল আপলোড করে নিজস্ব ডোমেইন তৈরি করতে পারেন।</li>
+            <li><strong>GitHub Pages:</strong> আপনার গিটহাব অ্যাকাউন্টে `repository` বানিয়ে ফ্রি লাইভ ইউআরএল পেতে পারেন।</li>
+          </ul>
+        </div>
+
+        <div class="p-3 bg-blue-50 dark:bg-blue-950/40 rounded-xl border border-blue-300 dark:border-blue-800">
+          <h4 class="font-bold text-blue-800 dark:text-blue-300 text-sm mb-1">২. ওয়েবসাইট থেকে এন্ড্রয়েড APK অ্যাপ বানানোর নিয়ম:</h4>
+          <p>অ্যাপের লিঙ্ক তৈরি হওয়ার পর সেটিকে মোবাইল ইনস্টলেবল APK তে রূপান্তর করার সহজ উপায়:</p>
+          <ul class="list-disc pl-5 mt-1 space-y-1">
+            <li><strong>Web2App / Website2APK:</strong> <a href="https://gonative.io" target="_blank" class="text-blue-500 underline">Median.co</a> অথবা <a href="https://web2app.ir" target="_blank" class="text-blue-500 underline">web2app</a> দিয়ে আপনার লাইভ লিঙ্কটি দিয়ে ২ মিনিটে Android APK ডাউনলোড করতে পারেন।</li>
+            <li><strong>PWA Add to Home Screen:</strong> আপনার ফোনের Chrome ব্রাউজারে লিঙ্কটি খুলে ৩-ডট মেনু থেকে <strong>"Add to Home Screen"</strong> চাপলে এটি ফোনের অ্যাপের মতো ইনস্টল হয়ে যাবে।</li>
+          </ul>
+        </div>
+
+        <div class="p-3 bg-purple-50 dark:bg-purple-950/40 rounded-xl border border-purple-300 dark:border-purple-800">
+          <h4 class="font-bold text-purple-800 dark:text-purple-300 text-sm mb-1">৩. ডাটা সুরক্ষা ও ব্যাকআপ:</h4>
+          <p>অ্যাপটিতে আপনার সকল ডাটা আপনার মোবাইলের লোকাল মেমরিতে সুরক্ষিত থাকে। অ্যাপ বা ব্রাউজার পরিবর্তন করলেও ড্যাশবোর্ডের <strong>"ব্যাকআপ"</strong> বোতামে চাপ দিয়ে JSON ফাইল ডাউনলোড করে রাখতে পারেন এবং পরবর্তীতে <strong>"রিস্টোর"</strong> চাপ দিয়ে তা পুনরায় লোড করতে পারবেন।</p>
+        </div>
+
+      </div>
+
+      <div class="mt-5 text-right">
+        <button onclick="closeGuideModal()" class="px-5 py-2 bg-amber-500 text-white font-bold rounded-xl text-xs shadow">ঠিক আছে, বুঝেছি</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- JAVASCRIPT APP LOGIC persistence, authentication & denomination calculator -->
+  <script>
+    // --- LANGUAGE DICTIONARY (Bangla & English) ---
+    const i18n = {
+      bn: {
+        tagline: "সহজ ও নির্ভুল টাকা সংগ্রহের হিসাব অ্যাপ",
+        login: "লগইন",
+        register: "রেজিস্ট্রেশন",
+        mobileNumber: "মোবাইল নম্বর",
+        password: "পাসওয়ার্ড",
+        submitLogin: "লগইন করুন",
+        fullName: "পূর্ণ নাম",
+        emailOptional: "ইমেইল (ঐচ্ছিক)",
+        sendOtp: "ওটিপি (OTP) ভেরিফাই করুন",
+        otpInfo: "ফোনে প্রেরিত ৬ ডিজিটের ওটিপি কোড লিখুন (পরীক্ষার কোড: 123456)",
+        submitReg: "অ্যাকাউন্ট তৈরি করুন",
+        totalCustomers: "মোট গ্রাহক / কলাম",
+        totalGiven: "মোট জমা টাকা",
+        totalReturned: "মোট ফেরত টাকা",
+        netBalance: "নিট সংগ্রহ",
+        searchPlaceholder: "নাম বা মোবাইল নম্বর দিয়ে খুঁজুন...",
+        addCustomer: "নতুন গ্রাহক যোগ করুন",
+        backup: "ব্যাকআপ",
+        restore: "রিস্টোর",
+        customerColumns: "গ্রাহকদের হিসাব কলাম তালিকা",
+        noCustomersFound: "কোনো গ্রাহক পাওয়া যায়নি। নতুন গ্রাহক যোগ করুন!",
+        personName: "গ্রাহকের নাম",
+        personPhone: "মোবাইল নম্বর",
+        personAddress: "ঠিকানা / রুট (ঐচ্ছিক)",
+        cancel: "বাতিল",
+        save: "সংরক্ষণ করুন",
+        addPayment: "টাকা জমা হিসাব",
+        noteCalculator: "নোটের ধরন ও সংখ্যা (Denomination Calculator)",
+        givenTotal: "মোট দেওয়া টাকা:",
+        returnAmount: "ফেরত দেওয়া টাকা (Change)",
+        netReceived: "নিট জমা টাকা (Net)",
+        remarks: "মন্তব্য / বিবরণ (যেমন: ২ কেজি ঘি)",
+        saveTx: "লেনদেন যোগ করুন",
+        fullHistory: "বিস্তারিত লেনদেন ইতিহাস",
+        adminPanel: "এডমিন অনুমোদন প্যানেল"
+      },
+      en: {
+        tagline: "Easy & Accurate Ghee/Milk Money Tracker",
+        login: "Login",
+        register: "Register",
+        mobileNumber: "Mobile Number",
+        password: "Password",
+        submitLogin: "Sign In",
+        fullName: "Full Name",
+        emailOptional: "Email (Optional)",
+        sendOtp: "Verify OTP Code",
+        otpInfo: "Enter 6-digit code sent to phone (Test OTP: 123456)",
+        submitReg: "Create Account",
+        totalCustomers: "Total Customers",
+        totalGiven: "Total Cash Received",
+        totalReturned: "Total Cash Returned",
+        netBalance: "Net Collection",
+        searchPlaceholder: "Search by name or phone...",
+        addCustomer: "Add New Customer",
+        backup: "Backup",
+        restore: "Restore",
+        customerColumns: "Customer Account Columns",
+        noCustomersFound: "No customer profiles found. Add your first customer!",
+        personName: "Customer Name",
+        personPhone: "Mobile Number",
+        personAddress: "Address / Route (Optional)",
+        cancel: "Cancel",
+        save: "Save Customer",
+        addPayment: "Record Money Collection",
+        noteCalculator: "Note Denomination Calculator",
+        givenTotal: "Total Given Cash:",
+        returnAmount: "Change Returned",
+        netReceived: "Net Received",
+        remarks: "Remarks / Notes (e.g. 2 Kg Ghee)",
+        saveTx: "Save Transaction",
+        fullHistory: "Detailed Transaction History",
+        adminPanel: "Admin Approval Panel"
+      }
+    };
+
+    // --- GLOBAL STATE ---
+    let currentLang = 'bn';
+    let currentUser = null;
+    let otpVerified = false;
+
+    // LOCAL STORAGE KEYS
+    const STORAGE_USERS = 'ghi_dmd_users_v1';
+    const STORAGE_CUSTOMERS = 'ghi_dmd_customers_v1';
+    const STORAGE_TRANSACTIONS = 'ghi_dmd_tx_v1';
+    const STORAGE_LOGGED_IN = 'ghi_dmd_logged_user_v1';
+
+    // Default Seed Admin Account
+    const defaultAdmin = {
+      id: 'admin_1',
+      name: 'GHI DMD Admin',
+      phone: '01332858038',
+      email: 'admin@ghidmd.com',
+      password: 'admin',
+      status: 'approved',
+      role: 'admin'
+    };
+
+    // --- INITIALIZATION ---
+    window.onload = function() {
+      document.getElementById('currentYear').innerText = new Date().getFullYear();
+      initTheme();
+      initData();
+      checkAuthSession();
+      renderAppLanguage();
+    };
+
+    // Seed LocalStorage Data
+    function initData() {
+      let users = JSON.parse(localStorage.getItem(STORAGE_USERS) || '[]');
+      if (users.length === 0) {
+        users.push(defaultAdmin);
+        localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
+      }
+      let customers = JSON.parse(localStorage.getItem(STORAGE_CUSTOMERS) || '[]');
+      if (customers.length === 0) {
+        // Seed default sample customers for demo
+        customers = [
+          { id: 'c1', name: 'মোঃ রফিকুল ইসলাম', phone: '01712000000', address: 'ঘি বাজার, ঘর নং ১২' },
+          { id: 'c2', name: 'আব্দুল কুদ্দুস ডেইরি', phone: '01819000000', address: 'গাভী মোড়, মিল্ক পয়েন্ট' }
+        ];
+        localStorage.setItem(STORAGE_CUSTOMERS, JSON.stringify(customers));
+      }
+    }
+
+    // Theme Switcher (Dark/Light)
+    function initTheme() {
+      if (localStorage.getItem('theme') === 'light') {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('bodyApp').className = 'app-bg-light text-slate-800 min-h-screen transition-colors duration-200';
+      } else {
+        document.documentElement.classList.add('dark');
+        document.getElementById('bodyApp').className = 'app-bg-dark text-slate-100 min-h-screen transition-colors duration-200';
+      }
+    }
+
+    function toggleTheme() {
+      if (document.documentElement.classList.contains('dark')) {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('bodyApp').className = 'app-bg-light text-slate-800 min-h-screen transition-colors duration-200';
+        localStorage.setItem('theme', 'light');
+      } else {
+        document.documentElement.classList.add('dark');
+        document.getElementById('bodyApp').className = 'app-bg-dark text-slate-100 min-h-screen transition-colors duration-200';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    // Language Toggle Switch
+    function toggleLanguage() {
+      currentLang = (currentLang === 'bn') ? 'en' : 'bn';
+      document.getElementById('langText').innerText = (currentLang === 'bn') ? 'বাংলা' : 'English';
+      renderAppLanguage();
+      if (currentUser) renderPersonColumns();
+    }
+
+    function renderAppLanguage() {
+      const langData = i18n[currentLang];
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (langData[key]) el.innerText = langData[key];
+      });
+      document.querySelectorAll('[data-i18n-ph]').forEach(el => {
+        const key = el.getAttribute('data-i18n-ph');
+        if (langData[key]) el.placeholder = langData[key];
+      });
+    }
+
+    // Toast Notification Banner
+    function showToast(message, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastContent = document.getElementById('toastContent');
+      
+      let bg = type === 'success' ? 'bg-emerald-600' : type === 'error' ? 'bg-rose-600' : 'bg-amber-600';
+      toastContent.className = `flex items-center p-4 rounded-xl shadow-2xl text-white font-medium border border-white/10 ${bg}`;
+      toastContent.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check' : 'fa-triangle-exclamation'} mr-2 text-lg"></i> ${message}`;
+      
+      toast.classList.remove('hidden');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-[-20px]', 'opacity-0');
+      }, 10);
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-[-20px]', 'opacity-0');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3500);
+    }
+
+    // Password Eye Visibility
+    function togglePasswordVisibility(inputId, eyeId) {
+      const input = document.getElementById(inputId);
+      const eye = document.getElementById(eyeId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        eye.classList.remove('fa-eye');
+        eye.classList.add('fa-eye-slash');
+      } else {
+        input.type = 'password';
+        eye.classList.remove('fa-eye-slash');
+        eye.classList.add('fa-eye');
+      }
+    }
+
+    // Auth Switcher Tabs
+    function switchAuthTab(tab) {
+      if (tab === 'login') {
+        document.getElementById('loginForm').classList.remove('hidden');
+        document.getElementById('registerForm').classList.add('hidden');
+        document.getElementById('tabLoginBtn').className = 'flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow transition';
+        document.getElementById('tabRegisterBtn').className = 'flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 transition';
+      } else {
+        document.getElementById('loginForm').classList.add('hidden');
+        document.getElementById('registerForm').classList.remove('hidden');
+        document.getElementById('tabRegisterBtn').className = 'flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg bg-white dark:bg-slate-700 text-amber-600 dark:text-amber-400 shadow transition';
+        document.getElementById('tabLoginBtn').className = 'flex-1 py-2 text-xs sm:text-sm font-semibold rounded-lg text-slate-500 dark:text-slate-400 transition';
+      }
+    }
+
+    // OTP Simulation
+    function triggerOtpSimulation() {
+      const phone = document.getElementById('regPhone').value;
+      if (!phone) {
+        showToast('অনুগ্রহ করে মোবাইল নম্বর প্রদান করুন!', 'error');
+        return;
+      }
+      document.getElementById('otpSection').classList.remove('hidden');
+      showToast('আপনার ফোনে ওটিপি পাঠানো হয়েছে। ট্রায়াল ওটিপি: 123456', 'info');
+      
+      const otpInput = document.getElementById('regOtp');
+      otpInput.addEventListener('input', function() {
+        if (this.value === '123456') {
+          otpVerified = true;
+          showToast('ওটিপি ভেরিফিকেশন সফল হয়েছে!', 'success');
+          document.getElementById('submitRegBtn').disabled = false;
+          document.getElementById('submitRegBtn').classList.remove('opacity-50', 'cursor-not-allowed');
+          document.getElementById('sendOtpBtn').classList.add('hidden');
+        }
+      });
+    }
+
+    // Handle User Registration
+    function handleRegister(e) {
+      e.preventDefault();
+      if (!otpVerified) {
+        showToast('প্রথমে ওটিপি কোড ভেরিফাই করুন!', 'error');
+        return;
+      }
+
+      const name = document.getElementById('regName').value.trim();
+      const phone = document.getElementById('regPhone').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+
+      let users = JSON.parse(localStorage.getItem(STORAGE_USERS) || '[]');
+      if (users.find(u => u.phone === phone)) {
+        showToast('এই মোবাইল নম্বরে ইতোমধ্যে অ্যাকাউন্ট রয়েছে!', 'error');
+        return;
+      }
+
+      const newUser = {
+        id: 'usr_' + Date.now(),
+        name: name,
+        phone: phone,
+        email: email || '',
+        password: password,
+        status: 'pending', // Waiting for Admin approval
+        role: 'user'
+      };
+
+      users.push(newUser);
+      localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
+
+      showToast('Welcome to GHI DMD App! Waiting for Admin Approval...', 'info');
+      switchAuthTab('login');
+      document.getElementById('registerForm').reset();
+      document.getElementById('otpSection').classList.add('hidden');
+      document.getElementById('sendOtpBtn').classList.remove('hidden');
+      otpVerified = false;
+    }
+
+    // Handle User Login
+    function handleLogin(e) {
+      e.preventDefault();
+      const phone = document.getElementById('loginPhone').value.trim();
+      const password = document.getElementById('loginPassword').value;
+
+      let users = JSON.parse(localStorage.getItem(STORAGE_USERS) || '[]');
+      const user = users.find(u => u.phone === phone && u.password === password);
+
+      if (!user) {
+        showToast('মোবাইল নম্বর বা পাসওয়ার্ড ভুল দেওয়া হয়েছে!', 'error');
+        return;
+      }
+
+      if (user.status === 'pending') {
+        showToast('Welcome to GHI DMD App! Waiting for Admin Approval...', 'warning');
+        return;
+      }
+
+      if (user.status === 'rejected') {
+        showToast('আপনার অ্যাকাউন্ট বাতিল করা হয়েছে। এডমিনের সাথে যোগাযোগ করুন: 01332858038', 'error');
+        return;
+      }
+
+      // Successful Login
+      currentUser = user;
+      localStorage.setItem(STORAGE_LOGGED_IN, JSON.stringify(user));
+      showToast(`স্বাগতম, ${user.name}!`, 'success');
+      setupAppForUser();
+    }
+
+    function checkAuthSession() {
+      const savedUser = localStorage.getItem(STORAGE_LOGGED_IN);
+      if (savedUser) {
+        currentUser = JSON.parse(savedUser);
+        setupAppForUser();
+      } else {
+        document.getElementById('authContainer').classList.remove('hidden');
+        document.getElementById('dashboardContainer').classList.add('hidden');
+        document.getElementById('userInfoSection').classList.add('hidden');
+        document.getElementById('adminNavBtn').classList.add('hidden');
+      }
+    }
+
+    function setupAppForUser() {
+      document.getElementById('authContainer').classList.add('hidden');
+      document.getElementById('dashboardContainer').classList.remove('hidden');
+      document.getElementById('userInfoSection').classList.remove('hidden');
+      document.getElementById('userNameDisplay').innerText = currentUser.name;
+
+      if (currentUser.role === 'admin' || currentUser.phone === '01332858038') {
+        document.getElementById('adminNavBtn').classList.remove('hidden');
+      } else {
+        document.getElementById('adminNavBtn').classList.add('hidden');
+      }
+
+      renderPersonColumns();
+    }
+
+    function handleLogout() {
+      currentUser = null;
+      localStorage.removeItem(STORAGE_LOGGED_IN);
+      document.getElementById('authContainer').classList.remove('hidden');
+      document.getElementById('dashboardContainer').classList.add('hidden');
+      document.getElementById('userInfoSection').classList.add('hidden');
+      document.getElementById('adminNavBtn').classList.add('hidden');
+      showToast('লগআউট সফল হয়েছে!', 'info');
+    }
+
+    // --- PERSON / CUSTOMER COLUMN MANAGEMENT ---
+    function openAddPersonModal(id = null) {
+      document.getElementById('personForm').reset();
+      document.getElementById('personEditId').value = '';
+      if (id) {
+        const customers = JSON.parse(localStorage.getItem(STORAGE_CUSTOMERS) || '[]');
+        const customer = customers.find(c => c.id === id);
+        if (customer) {
+          document.getElementById('personEditId').value = customer.id;
+          document.getElementById('personNameInput').value = customer.name;
+          document.getElementById('personPhoneInput').value = customer.phone || '';
+          document.getElementById('personAddressInput').value = customer.address || '';
+        }
+      }
+      document.getElementById('personModal').classList.remove('hidden');
+    }
+
+    function closePersonModal() {
+      document.getElementById('personModal').classList.add('hidden');
+    }
+
+    function savePersonForm(e) {
+      e.preventDefault();
+      const editId = document.getElementById('personEditId').value;
+      const name = document.getElementById('personNameInput').value.trim();
+      const phone = document.getElementById('personPhoneInput').value.trim();
+      const address = document.getElementById('personAddressInput').value.trim();
+
+      let customers = JSON.parse(localStorage.getItem(STORAGE_CUSTOMERS) || '[]');
+
+      if (editId) {
+        const index = customers.findIndex(c => c.id === editId);
+        if (index !== -1) {
+          customers[index].name = name;
+          customers[index].phone = phone;
+          customers[index].address = address;
+        }
+      } else {
+        if (customers.length >= 100) {
+          showToast('সর্বোচ্চ ১০০ জন গ্রাহকের সীমা পূর্ণ হয়েছে!', 'warning');
+        }
+        const newCustomer = {
+          id: 'cust_' + Date.now(),
+          name: name,
+          phone: phone,
+          address: address
+        };
+        customers.push(newCustomer);
+      }
+
+      localStorage.setItem(STORAGE_CUSTOMERS, JSON.stringify(customers));
+      closePersonModal();
+      renderPersonColumns();
+      showToast('গ্রাহক তথ্য সফলভাবে সংরক্ষণ করা হয়েছে!', 'success');
+    }
+
+    function deletePerson(id) {
+      if (confirm('আপনি কি এই গ্রাহক এবং তাঁর সমস্ত লেনদেনের হিসাব মুছে ফেলতে চান?')) {
+        let customers = JSON.parse(localStorage.getItem(STORAGE_CUSTOMERS) || '[]');
+        customers = customers.filter(c => c.id !== id);
+        localStorage.setItem(STORAGE_CUSTOMERS, JSON.stringify(customers));
+
+        let txs = JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS) || '[]');
+        txs = txs.filter(t => t.personId !== id);
+        localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(txs));
+
+        renderPersonColumns();
+        showToast('গ্রাহক মুছে ফেলা হয়েছে!', 'info');
+      }
+    }
+
+    // RENDER PERSON COLUMNS & STATS
+    function renderPersonColumns() {
+      const customers = JSON.parse(localStorage.getItem(STORAGE_CUSTOMERS) || '[]');
+      const allTxs = JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS) || '[]');
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+
+      const grid = document.getElementById('personColumnsGrid');
+      grid.innerHTML = '';
+
+      let totalGivenSum = 0;
+      let totalReturnedSum = 0;
+      let filteredCount = 0;
+
+      const filteredCustomers = customers.filter(c => 
+        c.name.toLowerCase().includes(searchQuery) || (c.phone && c.phone.includes(searchQuery))
+      );
+
+      if (filteredCustomers.length === 0) {
+        document.getElementById('emptyState').classList.remove('hidden');
+      } else {
+        document.getElementById('emptyState').classList.add('hidden');
+      }
+
+      filteredCustomers.forEach(customer => {
+        filteredCount++;
+        const customerTxs = allTxs.filter(t => t.personId === customer.id);
+
+        let cGiven = 0;
+        let cReturned = 0;
+
+        customerTxs.forEach(t => {
+          cGiven += t.totalGiven || 0;
+          cReturned += t.returnAmount || 0;
+        });
+
+        const cNet = cGiven - cReturned;
+        totalGivenSum += cGiven;
+        totalReturnedSum += cReturned;
+
+        // Column Card UI
+        const card = document.createElement('div');
+        card.className = "bg-white/90 dark:bg-slate-900/90 backdrop-blur-md rounded-2xl border border-amber-500/20 shadow-lg p-4 flex flex-col justify-between hover:border-amber-500/50 transition transform hover:-translate-y-1";
+        
+        card.innerHTML = `
+          <div>
+            <!-- Card Header -->
+            <div class="flex items-start justify-between border-b border-slate-100 dark:border-slate-800 pb-3 mb-3">
+              <div class="flex items-center space-x-2.5">
+                <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-amber-500 to-yellow-400 text-white font-bold flex items-center justify-center text-base shadow">
+                  ${customer.name.charAt(0)}
+                </div>
+                <div>
+                  <h4 class="font-bold text-slate-800 dark:text-white text-sm line-clamp-1">${customer.name}</h4>
+                  <p class="text-[11px] text-slate-400 font-medium">${customer.phone || 'নম্বর নেই'} ${customer.address ? '• ' + customer.address : ''}</p>
+                </div>
+              </div>
+
+              <!-- Options Dropdown/Buttons -->
+              <div class="flex items-center space-x-1">
+                <button onclick="openAddPersonModal('${customer.id}')" class="p-1.5 text-slate-400 hover:text-amber-500 transition" title="এডিট">
+                  <i class="fa-solid fa-pen-to-square text-xs"></i>
+                </button>
+                <button onclick="deletePerson('${customer.id}')" class="p-1.5 text-slate-400 hover:text-rose-500 transition" title="মুছুন">
+                  <i class="fa-solid fa-trash-can text-xs"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Customer Cash Summary Pills -->
+            <div class="grid grid-cols-3 gap-2 text-center my-3 bg-slate-50 dark:bg-slate-800/60 p-2.5 rounded-xl border border-slate-100 dark:border-slate-800">
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold">জমা টাকা</p>
+                <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">৳${cGiven}</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold">ফেরত</p>
+                <p class="text-xs font-bold text-rose-500 mt-0.5">৳${cReturned}</p>
+              </div>
+              <div>
+                <p class="text-[10px] text-slate-400 font-semibold">নিট সংগ্রহ</p>
+                <p class="text-xs font-black text-amber-600 dark:text-amber-400 mt-0.5">৳${cNet}</p>
+              </div>
+            </div>
+
+            <!-- Recent Transaction Preview -->
+            <div class="space-y-1.5 my-2">
+              <p class="text-[11px] font-bold text-slate-400 flex items-center justify-between">
+                <span>সাম্প্রতিক এন্ট্রি (${customerTxs.length})</span>
+                <button onclick="openHistoryModal('${customer.id}')" class="text-amber-500 hover:underline text-[10px]">সবগুলো দেখুন</button>
+              </p>
+
+              ${customerTxs.length === 0 ? `
+                <p class="text-[11px] text-slate-400 italic py-2 text-center">কোনো লেনদেন রেকর্ড করা হয়নি</p>
+              ` : customerTxs.slice(-2).reverse().map(t => `
+                <div class="p-2 bg-slate-100/70 dark:bg-slate-800/40 rounded-lg text-[11px] flex justify-between items-center">
+                  <div>
+                    <p class="font-bold text-slate-700 dark:text-slate-200">৳${t.netAmount} <span class="text-[10px] text-slate-400 font-normal">(${t.timeStr})</span></p>
+                    <p class="text-[9px] text-slate-400">${t.remarks || 'জমা গ্রহণ'}</p>
+                  </div>
+                  <span class="text-[9px] px-1.5 py-0.5 bg-amber-500/10 text-amber-600 dark:text-amber-400 rounded font-semibold">${t.dateStr}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <!-- Add Payment Button -->
+          <div class="pt-3 border-t border-slate-100 dark:border-slate-800">
+            <button onclick="openTxModal('${customer.id}')" class="w-full py-2 bg-amber-500 hover:bg-amber-600 text-white font-bold text-xs rounded-xl shadow flex items-center justify-center space-x-1 transition">
+              <i class="fa-solid fa-plus-circle text-xs"></i>
+              <span>টাকা ও নোটের হিসাব যোগ করুন</span>
+            </button>
+          </div>
+        `;
+
+        grid.appendChild(card);
+      });
+
+      // Update Top Stats
+      document.getElementById('statTotalPersons').innerText = `${customers.length} / 100`;
+      document.getElementById('statTotalGiven').innerText = `৳ ${totalGivenSum.toLocaleString()}`;
+      document.getElementById('statTotalReturned').innerText = `৳ ${totalReturnedSum.toLocaleString()}`;
+      document.getElementById('statNetBalance').innerText = `৳ ${(totalGivenSum - totalReturnedSum).toLocaleString()}`;
+      document.getElementById('personCountBadge').innerText = `${filteredCount} জন`;
+    }
+
+    // --- TRANSACTION & DENOMINATION CALCULATOR LOGIC ---
+    function openTxModal(personId) {
+      const customers = JSON.parse(localStorage.getItem(STORAGE_CUSTOMERS) || '[]');
+      const customer = customers.find(c => c.id === personId);
+      if (!customer) return;
+
+      document.getElementById('txPersonId').value = personId;
+      document.getElementById('txCustomerName').innerText = customer.name;
+
+      // Reset Inputs
+      document.getElementById('note50').value = 0;
+      document.getElementById('note100').value = 0;
+      document.getElementById('note200').value = 0;
+      document.getElementById('note500').value = 0;
+      document.getElementById('note1000').value = 0;
+      document.getElementById('txReturnAmount').value = 0;
+      document.getElementById('txRemarks').value = '';
+
+      calculateNotes();
+      document.getElementById('txModal').classList.remove('hidden');
+    }
+
+    function closeTxModal() {
+      document.getElementById('txModal').classList.add('hidden');
+    }
+
+    // Auto Note Calculator Function
+    function calculateNotes() {
+      const n50 = parseInt(document.getElementById('note50').value) || 0;
+      const n100 = parseInt(document.getElementById('note100').value) || 0;
+      const n200 = parseInt(document.getElementById('note200').value) || 0;
+      const n500 = parseInt(document.getElementById('note500').value) || 0;
+      const n1000 = parseInt(document.getElementById('note1000').value) || 0;
+
+      const totalGiven = (n50 * 50) + (n100 * 100) + (n200 * 200) + (n500 * 500) + (n1000 * 1000);
+      const returnAmt = parseInt(document.getElementById('txReturnAmount').value) || 0;
+
+      const netReceived = totalGiven - returnAmt;
+
+      document.getElementById('calculatedGivenDisplay').innerText = `৳ ${totalGiven}`;
+      document.getElementById('txNetReceived').value = `৳ ${netReceived}`;
+    }
+
+    function saveTransaction(e) {
+      e.preventDefault();
+      const personId = document.getElementById('txPersonId').value;
+      const n50 = parseInt(document.getElementById('note50').value) || 0;
+      const n100 = parseInt(document.getElementById('note100').value) || 0;
+      const n200 = parseInt(document.getElementById('note200').value) || 0;
+      const n500 = parseInt(document.getElementById('note500').value) || 0;
+      const n1000 = parseInt(document.getElementById('note1000').value) || 0;
+
+      const totalGiven = (n50 * 50) + (n100 * 100) + (n200 * 200) + (n500 * 500) + (n1000 * 1000);
+      const returnAmount = parseInt(document.getElementById('txReturnAmount').value) || 0;
+      const remarks = document.getElementById('txRemarks').value.trim();
+
+      if (totalGiven === 0 && returnAmount === 0) {
+        showToast('টাকার ইনপুট প্রদান করুন!', 'error');
+        return;
+      }
+
+      // Generate precise timestamp with seconds
+      const now = new Date();
+      const dateStr = now.toLocaleDateString('bn-BD', { day: '2-digit', month: 'short', year: 'numeric' });
+      const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+
+      const newTx = {
+        id: 'tx_' + Date.now(),
+        personId: personId,
+        notes: { n50, n100, n200, n500, n1000 },
+        totalGiven: totalGiven,
+        returnAmount: returnAmount,
+        netAmount: totalGiven - returnAmount,
+        remarks: remarks,
+        dateStr: dateStr,
+        timeStr: timeStr,
+        timestamp: Date.now()
+      };
+
+      let txs = JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS) || '[]');
+      txs.push(newTx);
+      localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(txs));
+
+      closeTxModal();
+      renderPersonColumns();
+      showToast('টাকা সংগ্রহের হিসাব সংরক্ষিত হয়েছে!', 'success');
+    }
+
+    // --- DETAILED HISTORY MODAL ---
+    let currentHistoryPersonId = null;
+
+    function openHistoryModal(personId) {
+      currentHistoryPersonId = personId;
+      const customers = JSON.parse(localStorage.getItem(STORAGE_CUSTOMERS) || '[]');
+      const customer = customers.find(c => c.id === personId);
+      if (!customer) return;
+
+      document.getElementById('historyCustomerName').innerText = customer.name;
+      document.getElementById('historyCustomerPhone').innerText = `${customer.phone || 'ফোন নম্বর নাই'} • ${customer.address || ''}`;
+
+      const allTxs = JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS) || '[]');
+      const personTxs = allTxs.filter(t => t.personId === personId).sort((a, b) => b.timestamp - a.timestamp);
+
+      const historyList = document.getElementById('historyList');
+      historyList.innerHTML = '';
+
+      if (personTxs.length === 0) {
+        historyList.innerHTML = `<p class="text-center py-6 text-xs text-slate-400">কোনো আগের লেনদেনের হিস্ট্রি নেই</p>`;
+      } else {
+        personTxs.forEach(t => {
+          const item = document.createElement('div');
+          item.className = "p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex flex-col sm:flex-row justify-between sm:items-center gap-2";
+          
+          item.innerHTML = `
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="text-sm font-black text-amber-600 dark:text-amber-400">নিট জমা: ৳${t.netAmount}</span>
+                <span class="text-[10px] px-2 py-0.5 bg-slate-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full font-semibold">
+                  <i class="fa-regular fa-clock mr-1"></i> ${t.dateStr}, ${t.timeStr}
+                </span>
+              </div>
+
+              <div class="text-[11px] text-slate-500 mt-1 space-x-2">
+                <span>জমা: ৳${t.totalGiven}</span>
+                <span>•</span>
+                <span>ফেরত: ৳${t.returnAmount}</span>
+                ${t.remarks ? `<span>• বিবরণ: ${t.remarks}</span>` : ''}
+              </div>
+
+              <!-- Breakdown of notes -->
+              <div class="mt-1 flex flex-wrap gap-1 text-[10px] text-slate-400">
+                ${t.notes?.n1000 ? `<span class="px-1.5 bg-amber-500/10 text-amber-600 rounded">৳1000x${t.notes.n1000}</span>` : ''}
+                ${t.notes?.n500 ? `<span class="px-1.5 bg-amber-500/10 text-amber-600 rounded">৳500x${t.notes.n500}</span>` : ''}
+                ${t.notes?.n200 ? `<span class="px-1.5 bg-amber-500/10 text-amber-600 rounded">৳200x${t.notes.n200}</span>` : ''}
+                ${t.notes?.n100 ? `<span class="px-1.5 bg-amber-500/10 text-amber-600 rounded">৳100x${t.notes.n100}</span>` : ''}
+                ${t.notes?.n50 ? `<span class="px-1.5 bg-amber-500/10 text-amber-600 rounded">৳50x${t.notes.n50}</span>` : ''}
+              </div>
+            </div>
+
+            <button onclick="deleteSingleTx('${t.id}')" class="self-end sm:self-center p-1.5 text-slate-400 hover:text-rose-500 transition" title="ডিলিট">
+              <i class="fa-solid fa-trash-can text-xs"></i>
+            </button>
+          `;
+
+          historyList.appendChild(item);
+        });
+      }
+
+      document.getElementById('historyModal').classList.remove('hidden');
+    }
+
+    function closeHistoryModal() {
+      document.getElementById('historyModal').classList.add('hidden');
+    }
+
+    function deleteSingleTx(txId) {
+      if (confirm('আপনি কি এই লেনদেনের হিস্ট্রি এন্ট্রিটি মুছে ফেলতে চান?')) {
+        let txs = JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS) || '[]');
+        txs = txs.filter(t => t.id !== txId);
+        localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(txs));
+
+        openHistoryModal(currentHistoryPersonId);
+        renderPersonColumns();
+        showToast('লেনদেন মুছে ফেলা হয়েছে', 'info');
+      }
+    }
+
+    function printCustomerHistory() {
+      window.print();
+    }
+
+    // --- ADMIN APPROVAL PANEL LOGIC ---
+    function openAdminModal() {
+      renderAdminUserList();
+      document.getElementById('adminModal').classList.remove('hidden');
+    }
+
+    function closeAdminModal() {
+      document.getElementById('adminModal').classList.add('hidden');
+    }
+
+    function renderAdminUserList() {
+      let users = JSON.parse(localStorage.getItem(STORAGE_USERS) || '[]');
+      const container = document.getElementById('adminUserList');
+      container.innerHTML = '';
+
+      if (users.length <= 1) {
+        container.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">কোনো ইউজার রেজিস্ট্রেশন পাওয়া যায়নি</p>`;
+        return;
+      }
+
+      users.forEach(u => {
+        if (u.role === 'admin') return;
+
+        const row = document.createElement('div');
+        row.className = "p-3 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 flex items-center justify-between";
+        
+        let statusBadge = u.status === 'approved' 
+          ? `<span class="px-2 py-0.5 bg-emerald-500/10 text-emerald-600 text-[10px] font-bold rounded">অনুমোদিত</span>`
+          : u.status === 'rejected'
+          ? `<span class="px-2 py-0.5 bg-rose-500/10 text-rose-600 text-[10px] font-bold rounded">বাতিল</span>`
+          : `<span class="px-2 py-0.5 bg-amber-500/10 text-amber-600 text-[10px] font-bold rounded animate-pulse">অপেক্ষা করছে</span>`;
+
+        row.innerHTML = `
+          <div>
+            <h5 class="text-xs font-bold text-slate-800 dark:text-white">${u.name}</h5>
+            <p class="text-[11px] text-slate-400">${u.phone} ${u.email ? '• ' + u.email : ''}</p>
+            <div class="mt-1">${statusBadge}</div>
+          </div>
+
+          <div class="flex space-x-1">
+            <button onclick="updateUserStatus('${u.id}', 'approved')" class="px-2.5 py-1 bg-emerald-600 text-white rounded-lg text-[11px] font-bold shadow hover:bg-emerald-700">
+              অনুমোদন
+            </button>
+            <button onclick="updateUserStatus('${u.id}', 'rejected')" class="px-2.5 py-1 bg-rose-600 text-white rounded-lg text-[11px] font-bold shadow hover:bg-rose-700">
+              বাতিল
+            </button>
+          </div>
+        `;
+
+        container.appendChild(row);
+      });
+    }
+
+    function updateUserStatus(userId, status) {
+      let users = JSON.parse(localStorage.getItem(STORAGE_USERS) || '[]');
+      const idx = users.findIndex(u => u.id === userId);
+      if (idx !== -1) {
+        users[idx].status = status;
+        localStorage.setItem(STORAGE_USERS, JSON.stringify(users));
+        renderAdminUserList();
+        showToast(`স্ট্যাটাস ${status === 'approved' ? 'অনুমোদিত' : 'বাতিল'} করা হয়েছে!`, 'success');
+      }
+    }
+
+    // --- EXPORT & IMPORT DATA (JSON BACKUP) ---
+    function exportDataJSON() {
+      const data = {
+        users: JSON.parse(localStorage.getItem(STORAGE_USERS) || '[]'),
+        customers: JSON.parse(localStorage.getItem(STORAGE_CUSTOMERS) || '[]'),
+        transactions: JSON.parse(localStorage.getItem(STORAGE_TRANSACTIONS) || '[]'),
+        exportedAt: new Date().toISOString()
+      };
+
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(data, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `GHI_DMD_Backup_${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+
+      showToast('ডাটা ব্যাকআপ ডাউনলোড শুরু হয়েছে!', 'success');
+    }
+
+    function triggerImportJSON() {
+      document.getElementById('importFileInput').click();
+    }
+
+    function importDataJSON(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const imported = JSON.parse(evt.target.result);
+          if (imported.customers && imported.transactions) {
+            localStorage.setItem(STORAGE_CUSTOMERS, JSON.stringify(imported.customers));
+            localStorage.setItem(STORAGE_TRANSACTIONS, JSON.stringify(imported.transactions));
+            if (imported.users) localStorage.setItem(STORAGE_USERS, JSON.stringify(imported.users));
+
+            renderPersonColumns();
+            showToast('ডাটা সফলভাবে রিস্টোর করা হয়েছে!', 'success');
+          } else {
+            showToast('অবৈধ ব্যাকআপ ফাইল ফরম্যাট!', 'error');
+          }
+        } catch (err) {
+          showToast('ফাইল রিড করতে সমস্যা হয়েছে!', 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // Guide Modal
+    function openGuideModal() {
+      document.getElementById('guideModal').classList.remove('hidden');
+    }
+    function closeGuideModal() {
+      document.getElementById('guideModal').classList.add('hidden');
+    }
+  </script>
+</body>
+</html>
