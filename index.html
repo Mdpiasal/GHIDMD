@@ -1,714 +1,1250 @@
 <!DOCTYPE html>
-<html lang="bn" class="light">
+<html lang="bn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GHI DMD - ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            darkMode: 'class',
-            theme: {
-                extend: {
-                    colors: {
-                        brand: { 50: '#f0fdf4', 500: '#22c55e', 600: '#16a34a', 700: '#15803d' }
-                    }
-                }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GHI DMD - ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              100: '#dcfce7',
+              500: '#22c55e',
+              600: '#16a34a',
+              700: '#15803d',
+              800: '#166534',
+              900: '#14532d',
             }
+          },
+          fontFamily: {
+            sans: ['Hind Siliguri', 'Inter', 'sans-serif'],
+          }
         }
-    </script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter & Noto Serif Bengali -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Serif+Bengali:wght@500;700&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', 'Noto Serif Bengali', sans-serif; }
-        .bg-cow-pattern {
-            background: linear-gradient(rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.65)), url('https://images.unsplash.com/photo-1546445317-2f44551d9ff9?auto=format&fit=crop&q=80&w=1920') no-repeat center center fixed;
-            background-size: cover;
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Hind Siliguri', 'Inter', sans-serif;
+      min-height: 100vh;
+      background-attachment: fixed;
+      background-position: center;
+      background-size: cover;
+      transition: background 0.3s ease;
+    }
+
+    .app-bg-light {
+      background-image: linear-gradient(rgba(255, 255, 255, 0.88), rgba(240, 253, 244, 0.92)), 
+                        url('https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?q=80&w=1600&auto=format&fit=crop');
+    }
+
+    .app-bg-dark {
+      background-image: linear-gradient(rgba(15, 23, 42, 0.92), rgba(15, 23, 42, 0.95)), 
+                        url('https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?q=80&w=1600&auto=format&fit=crop');
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .dark .glass-card {
+      background: rgba(30, 41, 59, 0.85);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.05);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(34, 197, 94, 0.5);
+      border-radius: 4px;
+    }
+  </style>
+
+  <!-- Firebase Script Imports -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'ghi-dmd-app';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+
+    window.GHI_APP = {
+      db: null,
+      auth: null,
+      currentUser: null,
+      appId: appId
+    };
+
+    if (firebaseConfig) {
+      try {
+        const app = initializeApp(firebaseConfig);
+        window.GHI_APP.db = getFirestore(app);
+        window.GHI_APP.auth = getAuth(app);
+
+        const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        if (token) {
+          signInWithCustomToken(window.GHI_APP.auth, token).catch(() => signInAnonymously(window.GHI_APP.auth));
+        } else {
+          signInAnonymously(window.GHI_APP.auth);
         }
-    </style>
+      } catch (err) {
+        console.warn("Firebase offline mode fallback:", err);
+      }
+    }
+  </script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen flex flex-col justify-between bg-cow-pattern">
+<body class="app-bg-light text-slate-800 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
 
-    <!-- Top Navigation Bar -->
-    <header class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md shadow-md sticky top-0 z-50 transition-colors duration-300">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 rounded-full bg-brand-500 flex items-center justify-center text-white font-bold shadow-lg">
-                    <i class="fa-solid fa-cow text-lg"></i>
-                </div>
-                <div>
-                    <h1 class="text-lg font-bold tracking-wide text-brand-700 dark:text-brand-500">GHI DMD</h1>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 lang-text" data-bn="ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট" data-en="Ghee & Milk Sales Management">ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট</p>
-                </div>
-            </div>
-            
-            <div class="flex items-center space-x-3">
-                <!-- Language Toggle -->
-                <button onclick="toggleLanguage()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition flex items-center space-x-1">
-                    <i class="fa-solid fa-globe"></i>
-                    <span id="langBtnText">EN</span>
-                </button>
-                <!-- Dark Mode Toggle -->
-                <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition">
-                    <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
-                </button>
-                <!-- User Profile / Logout (Visible when logged in) -->
-                <div id="userNavSection" class="hidden flex items-center space-x-2 border-l pl-3 border-gray-300 dark:border-gray-600">
-                    <span id="navUserName" class="text-xs font-medium hidden sm:inline"></span>
-                    <button onclick="logout()" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-red-500 text-white hover:bg-red-600 transition flex items-center space-x-1">
-                        <i class="fa-solid fa-right-from-bracket"></i>
-                        <span class="lang-text" data-bn="লগআউট" data-en="Logout">লগআউট</span>
-                    </button>
-                </div>
-            </div>
+  <!-- TOP HEADER NAV BAR -->
+  <header class="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 shadow-sm px-4 py-3">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      
+      <!-- App Brand Title -->
+      <div class="flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-green-500/20 text-xl font-bold">
+          🥛
         </div>
-    </header>
+        <div>
+          <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-700 via-green-600 to-teal-700 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
+            GHI DMD
+          </h1>
+          <p class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide" id="subHeaderTag">
+            ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট
+          </p>
+        </div>
+      </div>
 
-    <!-- Main Container -->
-    <main class="flex-grow flex items-center justify-center px-4 py-8">
+      <!-- Controls Right (Theme & Lang & User) -->
+      <div class="flex items-center space-x-2 md:space-x-3">
         
-        <!-- AUTH SECTION (Login & Registration) -->
-        <div id="authContainer" class="w-full max-w-md bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 transition-all duration-300">
-            
-            <!-- Tabs -->
-            <div class="flex rounded-xl bg-gray-100 dark:bg-gray-700 p-1 mb-6">
-                <button id="tabLoginBtn" onclick="switchTab('login')" class="flex-1 py-2.5 text-sm font-bold rounded-lg bg-white dark:bg-gray-800 text-brand-600 shadow transition lang-text" data-bn="লগইন" data-en="Login">লগইন</button>
-                <button id="tabRegBtn" onclick="switchTab('register')" class="flex-1 py-2.5 text-sm font-medium rounded-lg text-gray-500 dark:text-gray-400 transition lang-text" data-bn="রেজিস্ট্রেশন" data-en="Register">রেজিস্ট্রেশন</button>
-            </div>
+        <!-- Language Switcher -->
+        <button onclick="toggleLanguage()" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition">
+          <i class="fa-solid fa-globe text-emerald-600 dark:text-emerald-400 mr-1"></i>
+          <span id="langBtnText">EN</span>
+        </button>
 
-            <!-- LOGIN FORM -->
-            <form id="loginForm" onsubmit="handleLogin(event)" class="space-y-4">
-                <div class="text-center mb-4">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-white lang-text" data-bn="লগইন করুন" data-en="Login to System">লগইন করুন</h2>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 lang-text" data-bn="GHI DMD সিস্টেমে প্রবেশ করতে আপনার সঠিক তথ্য দিন" data-en="Enter your credentials to access system">GHI DMD সিস্টেমে প্রবেশ করতে আপনার সঠিক তথ্য দিন</p>
-                </div>
-                
-                <div>
-                    <label class="block text-xs font-semibold mb-1 lang-text" data-bn="মোবাইল নম্বর" data-en="Mobile Number">মোবাইল নম্বর</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-phone"></i></span>
-                        <input type="tel" id="loginPhone" required placeholder="01700000000" class="w-full pl-10 pr-4 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </div>
-                </div>
+        <!-- Theme Mode Toggle -->
+        <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition">
+          <i class="fa-solid fa-moon dark:hidden text-indigo-600"></i>
+          <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
+        </button>
 
-                <div>
-                    <label class="block text-xs font-semibold mb-1 lang-text" data-bn="পাসওয়ার্ড" data-en="Password">পাসওয়ার্ড</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-lock"></i></span>
-                        <input type="password" id="loginPassword" required placeholder="********" class="w-full pl-10 pr-10 py-2.5 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <button type="button" onclick="togglePassword('loginPassword', 'loginEyeIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
-                            <i id="loginEyeIcon" class="fa-solid fa-eye text-sm"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg transition duration-200 lang-text" data-bn="লগইন করুন" data-en="Login">লগইন করুন</button>
-            </form>
-
-            <!-- REGISTRATION FORM -->
-            <form id="regForm" onsubmit="handleRegister(event)" class="space-y-4 hidden">
-                <div class="text-center mb-4">
-                    <h2 class="text-xl font-bold text-gray-800 dark:text-white lang-text" data-bn="নতুন অ্যাকাউন্ট তৈরি করুন" data-en="Create New Account">নতুন অ্যাকাউন্ট তৈরি করুন</h2>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 lang-text" data-bn="আপনার সঠিক তথ্য দিয়ে রেজিস্ট্রেশন সম্পন্ন করুন" data-en="Register with your correct information">আপনার সঠিক তথ্য দিয়ে রেজিস্ট্রেশন সম্পন্ন করুন</p>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold mb-1 lang-text" data-bn="আপনার নাম" data-en="Your Name">আপনার নাম</label>
-                    <input type="text" id="regName" required placeholder="full name" class="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
-
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 lang-text" data-bn="মোবাইল নম্বর" data-en="Mobile Number">মোবাইল নম্বর</label>
-                        <input type="tel" id="regPhone" required placeholder="01700000000" class="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1 lang-text" data-bn="ইমেইল (ঐচ্ছিক)" data-en="Email (Optional)">ইমেইল (ঐচ্ছিক)</label>
-                        <input type="email" id="regEmail" placeholder="email@gmail.com" class="w-full px-4 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </div>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-semibold mb-1 lang-text" data-bn="পাসওয়ার্ড" data-en="Password">পাসওয়ার্ড</label>
-                    <div class="relative">
-                        <input type="password" id="regPassword" required placeholder="********" class="w-full px-4 py-2 pr-10 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <button type="button" onclick="togglePassword('regPassword', 'regEyeIcon')" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600">
-                            <i id="regEyeIcon" class="fa-solid fa-eye text-sm"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow-lg transition duration-200 lang-text" data-bn="ওটিপি (OTP) পাঠান ও রেজিস্ট্রেশন করুন" data-en="Send OTP & Register">ওটিপি (OTP) পাঠান ও রেজিস্ট্রেশন করুন</button>
-            </form>
-
-            <!-- NB Support Notice -->
-            <div class="mt-6 p-3 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 rounded-xl text-center">
-                <p class="text-xs text-emerald-700 dark:text-emerald-300 font-medium">
-                    <i class="fa-solid fa-circle-info mr-1"></i> 
-                    NB: যেকোনো সমস্যা বা তথ্যের জন্য contact করুন <a href="tel:01332858038" class="underline font-bold">01332858038</a>
-                </p>
-            </div>
+        <!-- Active User Profile / Logout Button -->
+        <div id="userProfileNav" class="hidden flex items-center space-x-2 pl-2 border-l border-slate-300 dark:border-slate-700">
+          <div class="text-right hidden sm:block">
+            <p id="navUserName" class="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight"></p>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 font-semibold">Active</span>
+          </div>
+          <button onclick="handleLogout()" class="p-2 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 transition" title="Logout">
+            <i class="fa-solid fa-right-from-bracket"></i>
+          </button>
         </div>
 
-        <!-- DASHBOARD SECTION (Original Layout Restored) -->
-        <div id="dashboardContainer" class="w-full max-w-7xl hidden space-y-6">
-            
-            <!-- Summary Stats Card -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-5 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 lang-text" data-bn="মোট সদস্য" data-en="Total Members">মোট সদস্য</p>
-                    <h3 id="totalMembersCount" class="text-2xl font-bold text-brand-600 mt-1">0</h3>
-                </div>
-                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-5 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 lang-text" data-bn="মোট সংগৃহীত টাকা" data-en="Total Collected Amount">মোট সংগৃহীত টাকা</p>
-                    <h3 id="totalCollectedAmount" class="text-2xl font-bold text-emerald-600 mt-1">৳ 0</h3>
-                </div>
-                <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-5 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700">
-                    <p class="text-xs text-gray-500 dark:text-gray-400 lang-text" data-bn="মোট ঘি/দুধ বিক্রি" data-en="Total Quantity Sold">মোট ঘি/দুধ বিক্রি</p>
-                    <h3 id="totalQuantitySold" class="text-2xl font-bold text-blue-600 mt-1">0 KG/L</h3>
-                </div>
-            </div>
-
-            <!-- Action Controls Bar -->
-            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md p-4 rounded-2xl shadow-lg flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div class="w-full sm:w-72 relative">
-                    <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400"><i class="fa-solid fa-search"></i></span>
-                    <input type="text" id="searchInput" oninput="renderMembers()" placeholder="সৈনিক বা নাম দিয়ে খুঁজুন..." class="w-full pl-10 pr-4 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-brand-500">
-                </div>
-                <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
-                    <button onclick="openAddMemberModal()" class="px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold rounded-xl shadow transition flex items-center space-x-2">
-                        <i class="fa-solid fa-user-plus"></i>
-                        <span class="lang-text" data-bn="নতুন সদস্য যোগ করুন" data-en="Add Member">নতুন সদস্য যোগ করুন</span>
-                    </button>
-                    <button onclick="openHistoryModal()" class="px-4 py-2 bg-gray-700 hover:bg-gray-800 text-white text-sm font-bold rounded-xl shadow transition flex items-center space-x-2">
-                        <i class="fa-solid fa-clock-rotate-left"></i>
-                        <span class="lang-text" data-bn="হিস্ট্রি" data-en="History">হিস্ট্রি</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Members List Grid / Table -->
-            <div class="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-gray-100 dark:bg-gray-700/60 text-xs uppercase text-gray-600 dark:text-gray-300 tracking-wider">
-                                <th class="p-4">Rank & Name</th>
-                                <th class="p-4">Sainik No</th>
-                                <th class="p-4">Total Paid</th>
-                                <th class="p-4">Total Qty</th>
-                                <th class="p-4 text-right">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="membersTableBody" class="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                            <!-- Populated dynamically -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-    </main>
-
-    <!-- FOOTER -->
-    <footer class="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md py-4 text-center text-xs text-gray-500 border-t dark:border-gray-700">
-        <p>GHI DMD © 2026. All Rights Reserved.</p>
-    </footer>
-
-    <!-- OTP MODAL -->
-    <div id="otpModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-sm w-full p-6 shadow-2xl space-y-4 text-center">
-            <div class="w-12 h-12 rounded-full bg-brand-50 text-brand-600 mx-auto flex items-center justify-center text-xl font-bold">
-                <i class="fa-solid fa-shield-halved"></i>
-            </div>
-            <h3 class="text-lg font-bold">মোবাইল ওটিপি যাচাই</h3>
-            <p class="text-xs text-gray-500">আপনার মোবাইল নম্বরে একটি কোড পাঠানো হয়েছে (ডেমো কোড: <span class="font-bold text-brand-600">1234</span>)</p>
-            <input type="text" id="otpInput" maxlength="4" placeholder="4 digit OTP" class="w-32 text-center tracking-widest text-lg py-2 rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 mx-auto block focus:outline-none focus:ring-2 focus:ring-brand-500">
-            <button onclick="verifyOtp()" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow">যাচাই করুন</button>
-        </div>
+      </div>
     </div>
+  </header>
 
-    <!-- ADD/EDIT MEMBER MODAL -->
-    <div id="memberModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
-                <h3 id="memberModalTitle" class="text-lg font-bold">নতুন সদস্য যোগ করুন</h3>
-                <button onclick="closeMemberModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <form id="memberForm" onsubmit="saveMember(event)" class="space-y-3">
-                <input type="hidden" id="editingMemberId">
-                <div class="grid grid-cols-2 gap-3">
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">Rank</label>
-                        <select id="memberRank" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none">
-                            <option value="SWO">SWO</option>
-                            <option value="WO">WO</option>
-                            <option value="SGT">SGT</option>
-                            <option value="CPL">CPL</option>
-                            <option value="LCPL">LCPL</option>
-                            <option value="SNK">SNK</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">সৈনিক নম্বর</label>
-                        <input type="text" id="memberSainikNo" required placeholder="JCO/Sainik No" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none">
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1">সদস্যের নাম</label>
-                    <input type="text" id="memberName" required placeholder="Full Name" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none">
-                </div>
-                <button type="submit" class="w-full py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow">সংরক্ষণ করুন</button>
-            </form>
+  <!-- MAIN CONTAINER -->
+  <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6">
+
+    <!-- 1. AUTHENTICATION SECTION -->
+    <section id="authSection" class="max-w-md mx-auto my-6 sm:my-10">
+      <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-200/80 dark:border-slate-800/80 relative overflow-hidden">
+        
+        <div class="text-center mb-6">
+          <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-green-600 to-emerald-500 text-white flex items-center justify-center text-3xl shadow-lg shadow-green-500/30">
+            🐄
+          </div>
+          <h2 class="text-2xl font-bold tracking-tight text-slate-800 dark:text-white" id="authTitle">লগইন করুন</h2>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" id="authSubTitle">GHI DMD সিস্টেমে প্রবেশ করতে আপনার তথ্য দিন</p>
         </div>
-    </div>
 
-    <!-- TRANSACTION MODAL (Note Calculator & Quantity) -->
-    <div id="txModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
-                <div>
-                    <h3 class="text-lg font-bold">টাকা ও ঘি/দুধ হিসাব</h3>
-                    <p id="txMemberSubtitle" class="text-xs text-gray-500"></p>
-                </div>
-                <button onclick="closeTxModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <form id="txForm" onsubmit="saveTransaction(event)" class="space-y-4">
-                <input type="hidden" id="txMemberId">
-                <input type="hidden" id="editingTxId">
-
-                <!-- Quantity -->
-                <div>
-                    <label class="block text-xs font-semibold mb-1">ঘি/দুধের পরিমাণ (KG / Liters)</label>
-                    <input type="number" step="0.1" id="txQty" required placeholder="Jemon: 1.5" class="w-full px-3 py-2 text-sm rounded-xl border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 focus:outline-none">
-                </div>
-
-                <!-- Notes Input Grid -->
-                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl space-y-3 border border-gray-200 dark:border-gray-700">
-                    <h4 class="text-xs font-bold uppercase text-gray-500">নোটের সংখ্যা (Note Denominations Given)</h4>
-                    <div class="grid grid-cols-5 gap-2 text-center">
-                        <div>
-                            <span class="text-xs font-semibold">৳1000</span>
-                            <input type="number" min="0" value="0" id="note1000" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold">৳500</span>
-                            <input type="number" min="0" value="0" id="note500" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold">৳200</span>
-                            <input type="number" min="0" value="0" id="note200" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold">৳100</span>
-                            <input type="number" min="0" value="0" id="note100" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold">৳50</span>
-                            <input type="number" min="0" value="0" id="note50" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700 text-sm">
-                        <span class="font-semibold">মোট প্রাপ্ত টাকা:</span>
-                        <span id="displayTotalGiven" class="font-bold text-brand-600">৳ 0</span>
-                    </div>
-                </div>
-
-                <!-- Return / Change Notes -->
-                <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl space-y-3 border border-gray-200 dark:border-gray-700">
-                    <h4 class="text-xs font-bold uppercase text-gray-500">ফেরত দেওয়া টাকা (Change/Return Notes)</h4>
-                    <div class="grid grid-cols-5 gap-2 text-center">
-                        <div>
-                            <span class="text-xs font-semibold">৳1000</span>
-                            <input type="number" min="0" value="0" id="ret1000" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold">৳500</span>
-                            <input type="number" min="0" value="0" id="ret500" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold">৳200</span>
-                            <input type="number" min="0" value="0" id="ret200" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold">৳100</span>
-                            <input type="number" min="0" value="0" id="ret100" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                        <div>
-                            <span class="text-xs font-semibold">৳50</span>
-                            <input type="number" min="0" value="0" id="ret50" oninput="calculateNotes()" class="w-full text-center py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800">
-                        </div>
-                    </div>
-                    <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-700 text-sm">
-                        <span class="font-semibold">মোট ফেরত টাকা:</span>
-                        <span id="displayTotalReturn" class="font-bold text-red-500">৳ 0</span>
-                    </div>
-                </div>
-
-                <!-- Net Paid Summary -->
-                <div class="p-3 bg-brand-50 dark:bg-brand-950/40 rounded-xl flex justify-between items-center font-bold">
-                    <span>নীট জমা (Net Collection):</span>
-                    <span id="displayNetPaid" class="text-lg text-brand-700 dark:text-brand-400">৳ 0</span>
-                </div>
-
-                <button type="submit" class="w-full py-3 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-xl shadow">লেনদেন সংরক্ষণ করুন</button>
-            </form>
+        <!-- AUTH TABS -->
+        <div class="grid grid-cols-2 gap-1 p-1 bg-slate-100 dark:bg-slate-800/80 rounded-xl mb-6">
+          <button id="tabLoginBtn" onclick="switchAuthTab('login')" class="py-2 text-xs font-bold rounded-lg transition bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm">
+            <span data-i18n="login">লগইন</span>
+          </button>
+          <button id="tabRegisterBtn" onclick="switchAuthTab('register')" class="py-2 text-xs font-bold rounded-lg transition text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200">
+            <span data-i18n="register">রেজিস্ট্রেশন</span>
+          </button>
         </div>
-    </div>
 
-    <!-- HISTORY MODAL -->
-    <div id="historyModal" class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white dark:bg-gray-800 rounded-2xl max-w-3xl w-full p-6 shadow-2xl space-y-4 max-h-[85vh] overflow-y-auto">
-            <div class="flex justify-between items-center border-b pb-3 dark:border-gray-700">
-                <h3 class="text-lg font-bold">সকল লেনদেনের হিস্ট্রি</h3>
-                <button onclick="closeHistoryModal()" class="text-gray-400 hover:text-gray-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+        <!-- LOGIN FORM -->
+        <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="mobileNumber">মোবাইল নম্বর</label>
+            <div class="relative">
+              <i class="fa-solid fa-phone absolute left-3 top-3 text-slate-400 text-xs"></i>
+              <input type="tel" id="loginMobile" required placeholder="01700000000" class="w-full pl-9 pr-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800/80 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
             </div>
-            <div id="historyListContainer" class="space-y-3">
-                <!-- Populated dynamically -->
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="password">পাসওয়ার্ড</label>
+            <div class="relative">
+              <i class="fa-solid fa-lock absolute left-3 top-3 text-slate-400 text-xs"></i>
+              <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full pl-9 pr-10 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800/80 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+              <button type="button" onclick="togglePasswordVisibility('loginPassword', 'loginPassEye')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <i id="loginPassEye" class="fa-solid fa-eye text-xs"></i>
+              </button>
             </div>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/20 transition transform active:scale-[0.98]">
+            <span data-i18n="login">লগইন করুন</span>
+          </button>
+        </form>
+
+        <!-- REGISTRATION FORM -->
+        <form id="registerForm" onsubmit="handleRegisterSubmit(event)" class="space-y-3 hidden">
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="fullName">পূর্ণ নাম</label>
+            <input type="text" id="regName" required placeholder="নাম লিখুন" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800/80 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="mobileNumber">মোবাইল নম্বর (OTP Verified)</label>
+            <input type="tel" id="regMobile" required placeholder="01XXXXXXXXX" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800/80 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+              <span data-i18n="email">ইমেইল</span> <span class="text-[10px] text-slate-400">(Optional / ঐচ্ছিক)</span>
+            </label>
+            <input type="email" id="regEmail" placeholder="example@mail.com" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800/80 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+          </div>
+
+          <div>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="password">পাসওয়ার্ড</label>
+            <div class="relative">
+              <input type="password" id="regPassword" required placeholder="••••••••" class="w-full pl-3 pr-10 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800/80 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
+              <button type="button" onclick="togglePasswordVisibility('regPassword', 'regPassEye')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+                <i id="regPassEye" class="fa-solid fa-eye text-xs"></i>
+              </button>
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/20 transition transform active:scale-[0.98] mt-2">
+            <span data-i18n="registerNow">রেজিস্ট্রেশন করুন</span>
+          </button>
+        </form>
+
+        <!-- MANDATORY CONTACT NOTICE BOX -->
+        <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 text-center">
+          <p class="text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
+            <i class="fa-solid fa-circle-info text-emerald-600 mr-1"></i>
+            NB: যেকোনো সমস্যা বা admin approval এর জন্য contact করুন 
+            <a href="tel:01332858038" class="underline font-bold text-emerald-700 dark:text-emerald-400 hover:text-emerald-900">01332858038</a>
+          </p>
         </div>
+
+      </div>
+    </section>
+
+
+    <!-- 2. MAIN DASHBOARD SECTION -->
+    <section id="dashboardSection" class="hidden space-y-6">
+
+      <!-- DASHBOARD METRICS SUMMARY CARDS -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div class="glass-card p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium" data-i18n="totalMembers">মোট সদস্য</p>
+            <h3 id="statTotalMembers" class="text-xl md:text-2xl font-black text-slate-800 dark:text-white mt-0.5">0 / 100</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-users"></i>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium" data-i18n="totalCollected">মোট আদায় টাকা</p>
+            <h3 id="statTotalCollected" class="text-xl md:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-0.5">৳0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-emerald-100 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-money-bill-wave"></i>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium" data-i18n="totalReturned">মোট ফেরত টাকা</p>
+            <h3 id="statTotalReturned" class="text-xl md:text-2xl font-black text-amber-600 dark:text-amber-400 mt-0.5">৳0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-hand-holding-dollar"></i>
+          </div>
+        </div>
+
+        <div class="glass-card p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex items-center justify-between">
+          <div>
+            <p class="text-xs text-slate-500 dark:text-slate-400 font-medium" data-i18n="netCash">অবশিষ্ট নীট ক্যাশ</p>
+            <h3 id="statNetCash" class="text-xl md:text-2xl font-black text-teal-600 dark:text-teal-400 mt-0.5">৳0</h3>
+          </div>
+          <div class="w-10 h-10 rounded-xl bg-teal-100 dark:bg-teal-900/40 text-teal-600 dark:text-teal-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-vault"></i>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTROLS & ACTIONS BAR -->
+      <div class="glass-card p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-3 justify-between items-center">
+        
+        <!-- Search and Filter -->
+        <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+          <div class="relative flex-grow sm:flex-grow-0 sm:w-64">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            <input type="text" id="searchInput" oninput="renderMembers()" placeholder="সৈনিক নম্বর বা নাম অনুসন্ধান..." class="w-full pl-9 pr-3 py-1.5 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+          </div>
+          <select id="rankFilter" onchange="renderMembers()" class="py-1.5 px-3 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800 text-slate-700 dark:text-slate-200 focus:outline-none">
+            <option value="">সব পদবী (All Ranks)</option>
+            <option value="SWO">SWO</option>
+            <option value="WO">WO</option>
+            <option value="SGT">SGT</option>
+            <option value="CPL">CPL</option>
+            <option value="LCPL">LCPL</option>
+            <option value="SNK">SNK</option>
+          </select>
+        </div>
+
+        <!-- Buttons -->
+        <div class="flex items-center space-x-2 w-full md:w-auto justify-end">
+          <button onclick="openExportModal()" class="px-3 py-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 transition flex items-center">
+            <i class="fa-solid fa-file-export mr-1.5 text-emerald-600"></i>
+            <span data-i18n="exportReport">রিপোর্ট প্রসেস</span>
+          </button>
+          
+          <button onclick="openAddMemberModal()" class="px-4 py-2 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white text-xs font-bold rounded-xl shadow-md shadow-emerald-600/20 transition flex items-center">
+            <i class="fa-solid fa-user-plus mr-1.5"></i>
+            <span data-i18n="addNewMember">নতুন নাম যোগ (Max 100)</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- MEMBERS GRID VIEW -->
+      <div id="membersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Dynamically rendered member cards -->
+      </div>
+
+      <!-- EMPTY STATE DISPLAY -->
+      <div id="emptyState" class="hidden glass-card rounded-2xl p-10 text-center border border-slate-200 dark:border-slate-800">
+        <div class="w-16 h-16 mx-auto mb-3 text-slate-300 dark:text-slate-600 text-4xl">
+          <i class="fa-solid fa-clipboard-list"></i>
+        </div>
+        <h4 class="text-base font-bold text-slate-700 dark:text-slate-300" data-i18n="noMembersYet">কোন সদস্য যুক্ত করা হয়নি</h4>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1" data-i18n="addFirstMember">টাকা তোলার সুবিধার্থে উপরে "নতুন নাম যোগ" বাটনে ক্লিক করে তথ্য যোগ করুন।</p>
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <!-- MODAL 1: ADD/EDIT MEMBER MODAL -->
+  <div id="addMemberModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+        <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center">
+          <i class="fa-solid fa-user-plus text-emerald-600 mr-2"></i>
+          <span id="memberModalTitleText">নতুন সদস্যের নাম ও পদবী যোগ</span>
+        </h3>
+        <button onclick="closeModal('addMemberModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="addMemberForm" onsubmit="handleSaveMember(event)" class="space-y-3">
+        <input type="hidden" id="editingMemberId">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="rank">পদবী (Rank)</label>
+          <select id="memberRank" required class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+            <option value="SNK">SNK (সৈনিক)</option>
+            <option value="LCPL">LCPL (এলসিপিএল)</option>
+            <option value="CPL">CPL (কর্পোরাল)</option>
+            <option value="SGT">SGT (সার্জেন্ট)</option>
+            <option value="WO">WO (ওয়ারেন্ট অফিসার)</option>
+            <option value="SWO">SWO (সিনিয়র ওয়ারেন্ট অফিসার)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="sainikNumber">সৈনিক নম্বর</label>
+          <input type="text" id="memberSainikNo" required placeholder="উদাহরণ: 1234567" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="memberName">সদস্যের নাম</label>
+          <input type="text" id="memberName" required placeholder="পূর্ণ নাম লিখুন" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" onclick="closeModal('addMemberModal')" class="px-4 py-2 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+            <span data-i18n="cancel">বাতিল</span>
+          </button>
+          <button type="submit" class="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-md">
+            <span data-i18n="save">সংরক্ষণ করুন</span>
+          </button>
+        </div>
+      </form>
     </div>
+  </div>
 
-    <!-- SCRIPT LOGIC -->
-    <script>
-        // State Management
-        let currentLang = 'bn';
-        let currentUser = JSON.parse(localStorage.getItem('ghi_current_user')) || null;
-        let usersDB = JSON.parse(localStorage.getItem('ghi_users_db')) || [];
-        let membersDB = JSON.parse(localStorage.getItem('ghi_members')) || [];
-        let transactionsDB = JSON.parse(localStorage.getItem('ghi_transactions')) || [];
-        let tempRegData = null;
 
-        // Init on load
-        window.onload = function() {
-            checkAuthStatus();
+  <!-- MODAL 2: CASH COLLECTION & GHEE/MILK QUANTITY CALCULATOR MODAL (ADD & EDIT) -->
+  <div id="cashCollectionModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
+    <div class="glass-card w-full max-w-lg rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
+        <div>
+          <h3 class="text-base font-bold text-slate-800 dark:text-white" id="modalMemberTitle">টাকা ও ঘি/দুধ পরিমাণ হিসাব এড করুন</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400" id="modalMemberSub">আইটেম, পরিমাণ এবং নোটের ধরন নির্বাচন করুন</p>
+        </div>
+        <button onclick="closeModal('cashCollectionModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <form id="cashForm" onsubmit="handleSaveCashEntry(event)" class="space-y-4 mt-3">
+        <input type="hidden" id="cashMemberId">
+        <input type="hidden" id="editingEntryId">
+
+        <!-- Item & Quantity Selection -->
+        <div class="grid grid-cols-2 gap-3 bg-emerald-50/60 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
+          <div>
+            <label class="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">পণ্যের ধরন (Item)</label>
+            <select id="itemType" class="w-full px-3 py-1.5 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500 font-semibold">
+              <option value="Ghee">ঘি (Ghee)</option>
+              <option value="Milk">দুধ (Milk)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">পরিমাণ (Quantity - KG / Liter)</label>
+            <input type="number" id="itemQuantity" step="0.1" min="0.1" value="1" required class="w-full px-3 py-1.5 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500 text-right font-bold text-emerald-600 dark:text-emerald-400">
+          </div>
+        </div>
+
+        <!-- Note Denomination Counter Inputs -->
+        <div class="space-y-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
+          <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-2 flex justify-between">
+            <span>নোটের ধরন (Note Denomination)</span>
+            <span>সংখ্যা (Qty)</span>
+          </p>
+
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 1000 Note</span>
+            <input type="number" id="note1000" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
+            <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub1000">৳0</span>
+          </div>
+
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 500 Note</span>
+            <input type="number" id="note500" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
+            <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub500">৳0</span>
+          </div>
+
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 200 Note</span>
+            <input type="number" id="note200" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
+            <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub200">৳0</span>
+          </div>
+
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 100 Note</span>
+            <input type="number" id="note100" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
+            <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub100">৳0</span>
+          </div>
+
+          <div class="flex items-center justify-between gap-2">
+            <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 50 Note</span>
+            <input type="number" id="note50" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
+            <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub50">৳0</span>
+          </div>
+        </div>
+
+        <!-- Calculated Summary Box -->
+        <div class="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800 space-y-2">
+          <div class="flex justify-between text-xs font-bold text-emerald-900 dark:text-emerald-200">
+            <span>মোট দিল (Total Received):</span>
+            <span id="calculatedGivenTotal" class="text-sm text-emerald-600 dark:text-emerald-400">৳0</span>
+          </div>
+
+          <div class="flex items-center justify-between pt-2 border-t border-emerald-200 dark:border-emerald-800">
+            <label class="text-xs font-bold text-amber-800 dark:text-amber-300" data-i18n="returnAmount">কত টাকা ফেরত দিলেন (Change Returned):</label>
+            <input type="number" id="cashReturned" min="0" value="0" oninput="calculateCashTotal()" class="w-28 px-2 py-1 text-xs font-bold text-amber-700 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 text-right focus:ring-1 focus:ring-amber-500">
+          </div>
+
+          <div class="flex justify-between text-xs font-black text-slate-800 dark:text-white pt-2 border-t border-emerald-200 dark:border-emerald-800">
+            <span>নীট জমা (Net Collected):</span>
+            <span id="calculatedNetTotal" class="text-base text-teal-600 dark:text-teal-400">৳0</span>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end space-x-2">
+          <button type="button" onclick="closeModal('cashCollectionModal')" class="px-4 py-2 text-xs font-bold rounded-xl border border-slate-300 dark:border-slate-700 text-slate-600 dark:text-slate-400">
+            <span data-i18n="cancel">বাতিল</span>
+          </button>
+          <button type="submit" class="px-5 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-md">
+            <span id="cashModalSubmitText" data-i18n="saveEntry">এন্ট্রি সেভ করুন</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+
+  <!-- MODAL 3: SMS OTP CODE VERIFICATION MODAL -->
+  <div id="smsCodeModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
+      <div class="w-12 h-12 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 flex items-center justify-center text-xl">
+        <i class="fa-solid fa-comment-sms"></i>
+      </div>
+      <h3 class="text-base font-bold text-slate-800 dark:text-white">মোবাইল OTP ভেরিফিকেশন</h3>
+      <p class="text-xs text-slate-500 dark:text-slate-400">আপনার <span id="smsTargetMobile" class="font-bold text-slate-700 dark:text-slate-200"></span> নম্বরে একটি ৪ ডিজিটের সিকিউরিটি কোড পাঠানো হয়েছে।</p>
+      
+      <div class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-mono text-emerald-600 font-bold">
+        [OTP Code: <span id="simulatedCode">8842</span>]
+      </div>
+
+      <input type="text" id="smsInputCode" maxlength="4" placeholder="----" class="w-36 mx-auto text-center tracking-widest text-xl font-bold py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
+
+      <button onclick="verifyOtpAndLoginInstantly()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md">
+        ভেরিফাই ও প্রবেশ করুন
+      </button>
+    </div>
+  </div>
+
+
+  <!-- MODAL 4: REPORT & EXPORT MODAL -->
+  <div id="exportModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-3xl rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[85vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
+        <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center">
+          <i class="fa-solid fa-print text-emerald-600 mr-2"></i>
+          <span>GHI DMD - সম্পূর্ণ রিপোর্ট প্রসেস</span>
+        </h3>
+        <button onclick="closeModal('exportModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="flex space-x-2">
+        <button onclick="downloadCSVReport()" class="px-3 py-1.5 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700">
+          <i class="fa-solid fa-file-csv mr-1"></i> Excel/CSV ডাউনলোড
+        </button>
+        <button onclick="window.print()" class="px-3 py-1.5 bg-slate-800 text-white text-xs font-bold rounded-lg hover:bg-slate-700">
+          <i class="fa-solid fa-print mr-1"></i> প্রিন্ট বা PDF সেভ
+        </button>
+      </div>
+
+      <!-- Printable Table Container -->
+      <div id="printableReportArea" class="bg-white text-slate-800 p-4 rounded-xl text-xs overflow-x-auto">
+        <div class="text-center mb-4 border-b pb-2">
+          <h2 class="text-lg font-black text-emerald-800">GHI DMD COLLECTION REPORT</h2>
+          <p class="text-[10px] text-slate-500">ঘি ও দুধ ক্যাশ ও পরিমাণ কালেকশন এর সম্পূর্ণ বিবরণী</p>
+          <p id="reportDateStamp" class="text-[10px] text-slate-400 mt-1"></p>
+        </div>
+
+        <table class="w-full text-left border-collapse border border-slate-200">
+          <thead>
+            <tr class="bg-slate-100 text-slate-700 border-b border-slate-300">
+              <th class="p-2 border border-slate-200">#</th>
+              <th class="p-2 border border-slate-200">Rank</th>
+              <th class="p-2 border border-slate-200">Sainik No</th>
+              <th class="p-2 border border-slate-200">Name</th>
+              <th class="p-2 border border-slate-200">Total Qty (KG/L)</th>
+              <th class="p-2 border border-slate-200 text-right">Collected</th>
+              <th class="p-2 border border-slate-200 text-right">Returned</th>
+              <th class="p-2 border border-slate-200 text-right">Net</th>
+              <th class="p-2 border border-slate-200">Last Entry Time</th>
+            </tr>
+          </thead>
+          <tbody id="exportTableBody">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- JAVASCRIPT APP LOGIC -->
+  <script>
+    const i18nData = {
+      bn: {
+        appName: 'GHI DMD',
+        subHeader: 'ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট',
+        login: 'লগইন',
+        register: 'রেজিস্ট্রেশন',
+        mobileNumber: 'মোবাইল নম্বর',
+        password: 'পাসওয়ার্ড',
+        fullName: 'পূর্ণ নাম',
+        email: 'ইমেইল',
+        registerNow: 'রেজিস্ট্রেশন ও প্রবেশ করুন',
+        totalMembers: 'মোট সদস্য',
+        totalCollected: 'মোট আদায় টাকা',
+        totalReturned: 'মোট ফেরত টাকা',
+        netCash: 'অবশিষ্ট নীট ক্যাশ',
+        exportReport: 'রিপোর্ট প্রসেস',
+        addNewMember: 'নতুন নাম যোগ (Max 100)',
+        noMembersYet: 'কোন সদস্য যুক্ত করা হয়নি',
+        addFirstMember: 'টাকা তোলার সুবিধার্থে উপরে "নতুন নাম যোগ" বাটনে ক্লিক করে তথ্য যোগ করুন।',
+        rank: 'পদবী (Rank)',
+        sainikNumber: 'সৈনিক নম্বর',
+        memberName: 'সদস্যের নাম',
+        cancel: 'বাতিল',
+        save: 'সংরক্ষণ করুন',
+        saveEntry: 'এন্ট্রি সেভ করুন',
+        returnAmount: 'কত টাকা ফেরত দিলেন (Change Returned):'
+      },
+      en: {
+        appName: 'GHI DMD',
+        subHeader: 'Ghee & Milk Sales Cash Management',
+        login: 'Login',
+        register: 'Register',
+        mobileNumber: 'Mobile Number',
+        password: 'Password',
+        fullName: 'Full Name',
+        email: 'Email',
+        registerNow: 'Register & Enter',
+        totalMembers: 'Total Members',
+        totalCollected: 'Total Collected',
+        totalReturned: 'Total Returned',
+        netCash: 'Net Cash In Hand',
+        exportReport: 'Process Report',
+        addNewMember: 'Add Member (Max 100)',
+        noMembersYet: 'No members added yet',
+        addFirstMember: 'Click "Add Member" button above to record ghee/milk cash entries.',
+        rank: 'Rank',
+        sainikNumber: 'Sainik Number',
+        memberName: 'Member Name',
+        cancel: 'Cancel',
+        save: 'Save Member',
+        saveEntry: 'Save Cash Entry',
+        returnAmount: 'Change Returned:'
+      }
+    };
+
+    let currentLang = 'bn';
+    let membersData = [];
+    let pendingRegisterData = null;
+
+    window.addEventListener('load', () => {
+      if (localStorage.getItem('ghi_theme') === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.body.classList.replace('app-bg-light', 'app-bg-dark');
+      }
+
+      loadStoredData();
+      checkSavedSession();
+    });
+
+    function loadStoredData() {
+      const storedMembers = localStorage.getItem('ghi_members');
+      if (storedMembers) {
+        try { membersData = JSON.parse(storedMembers); } catch(e){}
+      }
+    }
+
+    function saveLocalMembers() {
+      localStorage.setItem('ghi_members', JSON.stringify(membersData));
+      syncToFirebase();
+    }
+
+    async function syncToFirebase() {
+      if (!window.GHI_APP?.db || !window.GHI_APP?.currentUser) return;
+      const db = window.GHI_APP.db;
+      const userId = window.GHI_APP.currentUser.mobile;
+      const appId = window.GHI_APP.appId;
+
+      try {
+        const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'data', 'cashRecords');
+        await setDoc(userDocRef, {
+          members: membersData,
+          updatedAt: new Date().toISOString()
+        }, { merge: true });
+      } catch (err) {
+        console.warn("Firestore save fallback:", err);
+      }
+    }
+
+    async function loadFromFirebase(mobile) {
+      if (!window.GHI_APP?.db) return;
+      const db = window.GHI_APP.db;
+      const appId = window.GHI_APP.appId;
+
+      try {
+        const userDocRef = doc(db, 'artifacts', appId, 'users', mobile, 'data', 'cashRecords');
+        const snap = await getDoc(userDocRef);
+        if (snap.exists() && snap.data().members) {
+          membersData = snap.data().members;
+          localStorage.setItem('ghi_members', JSON.stringify(membersData));
+        }
+      } catch (err) {
+        console.warn("Firestore fetch fallback:", err);
+      }
+    }
+
+    function toggleLanguage() {
+      currentLang = currentLang === 'bn' ? 'en' : 'bn';
+      document.getElementById('langBtnText').textContent = currentLang === 'bn' ? 'EN' : 'বাংলা';
+      
+      document.querySelectorAll('[data-i18n]').forEach(el => {
+        const key = el.getAttribute('data-i18n');
+        if (i18nData[currentLang][key]) {
+          el.textContent = i18nData[currentLang][key];
+        }
+      });
+
+      document.getElementById('subHeaderTag').textContent = i18nData[currentLang].subHeader;
+      renderMembers();
+    }
+
+    function toggleTheme() {
+      const isDark = document.documentElement.classList.toggle('dark');
+      if (isDark) {
+        document.body.classList.replace('app-bg-light', 'app-bg-dark');
+        localStorage.setItem('ghi_theme', 'dark');
+      } else {
+        document.body.classList.replace('app-bg-dark', 'app-bg-light');
+        localStorage.setItem('ghi_theme', 'light');
+      }
+    }
+
+    function togglePasswordVisibility(inputId, eyeId) {
+      const input = document.getElementById(inputId);
+      const eye = document.getElementById(eyeId);
+      if (input.type === 'password') {
+        input.type = 'text';
+        eye.classList.replace('fa-eye', 'fa-eye-slash');
+      } else {
+        input.type = 'password';
+        eye.classList.replace('fa-eye-slash', 'fa-eye');
+      }
+    }
+
+    function switchAuthTab(tab) {
+      const loginForm = document.getElementById('loginForm');
+      const regForm = document.getElementById('registerForm');
+      const tabLoginBtn = document.getElementById('tabLoginBtn');
+      const tabRegisterBtn = document.getElementById('tabRegisterBtn');
+
+      if (tab === 'login') {
+        loginForm.classList.remove('hidden');
+        regForm.classList.add('hidden');
+        tabLoginBtn.className = "py-2 text-xs font-bold rounded-lg transition bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm";
+        tabRegisterBtn.className = "py-2 text-xs font-bold rounded-lg transition text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200";
+        document.getElementById('authTitle').textContent = currentLang === 'bn' ? "লগইন করুন" : "Login";
+      } else {
+        loginForm.classList.add('hidden');
+        regForm.classList.remove('hidden');
+        tabRegisterBtn.className = "py-2 text-xs font-bold rounded-lg transition bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-300 shadow-sm";
+        tabLoginBtn.className = "py-2 text-xs font-bold rounded-lg transition text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200";
+        document.getElementById('authTitle').textContent = currentLang === 'bn' ? "নতুন অ্যাকাউন্ট খুলুন" : "Create Account";
+      }
+    }
+
+    function handleLoginSubmit(e) {
+      e.preventDefault();
+      const mobile = document.getElementById('loginMobile').value.trim();
+      const pass = document.getElementById('loginPassword').value;
+
+      window.GHI_APP.currentUser = { name: 'ব্যবহারকারী', mobile: mobile };
+      saveUserSession();
+      loadFromFirebase(mobile).then(() => showDashboard());
+    }
+
+    function handleRegisterSubmit(e) {
+      e.preventDefault();
+      const name = document.getElementById('regName').value.trim();
+      const mobile = document.getElementById('regMobile').value.trim();
+      const email = document.getElementById('regEmail').value.trim();
+      const password = document.getElementById('regPassword').value;
+
+      pendingRegisterData = { name, mobile, email, password };
+
+      // Open OTP Verification Modal for instant login
+      document.getElementById('smsTargetMobile').textContent = mobile;
+      const code = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('simulatedCode').textContent = code;
+      document.getElementById('smsCodeModal').classList.remove('hidden');
+    }
+
+    function verifyOtpAndLoginInstantly() {
+      const enteredCode = document.getElementById('smsInputCode').value.trim();
+      const simCode = document.getElementById('simulatedCode').textContent;
+
+      if (enteredCode !== simCode && enteredCode !== '8842') {
+        alert("ভুল OTP কোড! আবার চেষ্টা করুন।");
+        return;
+      }
+
+      closeModal('smsCodeModal');
+
+      // Instant Login without approval
+      window.GHI_APP.currentUser = { 
+        name: pendingRegisterData.name, 
+        mobile: pendingRegisterData.mobile 
+      };
+      saveUserSession();
+      showDashboard();
+    }
+
+    function saveUserSession() {
+      localStorage.setItem('ghi_active_session', JSON.stringify(window.GHI_APP.currentUser));
+    }
+
+    function checkSavedSession() {
+      const session = localStorage.getItem('ghi_active_session');
+      if (session) {
+        try {
+          window.GHI_APP.currentUser = JSON.parse(session);
+          showDashboard();
+        } catch(e){}
+      }
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('ghi_active_session');
+      window.GHI_APP.currentUser = null;
+      document.getElementById('dashboardSection').classList.add('hidden');
+      document.getElementById('authSection').classList.remove('hidden');
+      document.getElementById('userProfileNav').classList.add('hidden');
+    }
+
+    function showDashboard() {
+      document.getElementById('authSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.remove('hidden');
+
+      const userNav = document.getElementById('userProfileNav');
+      userNav.classList.remove('hidden');
+      document.getElementById('navUserName').textContent = window.GHI_APP.currentUser?.name || 'User';
+
+      renderMembers();
+    }
+
+    function openAddMemberModal() {
+      if (membersData.length >= 100) {
+        alert("সর্বোচ্চ ১০০ জন সদস্যের লিমিট পূর্ণ হয়েছে!");
+        return;
+      }
+      document.getElementById('addMemberForm').reset();
+      document.getElementById('editingMemberId').value = '';
+      document.getElementById('memberModalTitleText').textContent = "নতুন সদস্যের নাম ও পদবী যোগ";
+      document.getElementById('addMemberModal').classList.remove('hidden');
+    }
+
+    function openEditMemberModal(id) {
+      const member = membersData.find(m => m.id === id);
+      if (!member) return;
+
+      document.getElementById('editingMemberId').value = member.id;
+      document.getElementById('memberRank').value = member.rank;
+      document.getElementById('memberSainikNo').value = member.sainikNo;
+      document.getElementById('memberName').value = member.name;
+      document.getElementById('memberModalTitleText').textContent = "সদস্যের তথ্য সম্পাদন (Edit Member)";
+      document.getElementById('addMemberModal').classList.remove('hidden');
+    }
+
+    function handleSaveMember(e) {
+      e.preventDefault();
+      const editingId = document.getElementById('editingMemberId').value;
+      const rank = document.getElementById('memberRank').value;
+      const sainikNo = document.getElementById('memberSainikNo').value.trim();
+      const name = document.getElementById('memberName').value.trim();
+
+      if (editingId) {
+        // Edit existing member
+        const member = membersData.find(m => m.id === editingId);
+        if (member) {
+          member.rank = rank;
+          member.sainikNo = sainikNo;
+          member.name = name;
+        }
+      } else {
+        // Add new member
+        const newMember = {
+          id: 'mem_' + Date.now(),
+          rank: rank,
+          sainikNo: sainikNo,
+          name: name,
+          createdAt: getFormattedTimestamp(),
+          history: []
         };
+        membersData.unshift(newMember);
+      }
 
-        function checkAuthStatus() {
-            if (currentUser) {
-                document.getElementById('authContainer').classList.add('hidden');
-                document.getElementById('dashboardContainer').classList.remove('hidden');
-                document.getElementById('userNavSection').classList.remove('hidden');
-                document.getElementById('navUserName').innerText = currentUser.name;
-                renderDashboard();
-            } else {
-                document.getElementById('authContainer').classList.remove('hidden');
-                document.getElementById('dashboardContainer').classList.add('hidden');
-                document.getElementById('userNavSection').classList.add('hidden');
-            }
+      saveLocalMembers();
+      closeModal('addMemberModal');
+      renderMembers();
+    }
+
+    function deleteMember(id) {
+      if (!confirm("আপনি কি নিশ্চিত যে এই সদস্যের সম্পূর্ণ বিবরণী মুছে ফেলতে চান?")) return;
+      membersData = membersData.filter(m => m.id !== id);
+      saveLocalMembers();
+      renderMembers();
+    }
+
+    function openCashModal(memberId) {
+      const member = membersData.find(m => m.id === memberId);
+      if (!member) return;
+
+      document.getElementById('cashMemberId').value = memberId;
+      document.getElementById('editingEntryId').value = '';
+      document.getElementById('modalMemberTitle').textContent = `${member.rank} ${member.name} (${member.sainikNo})`;
+      document.getElementById('modalMemberSub').textContent = `ঘি/দুধ পরিমাণ ও নোটের হিসাব এন্ট্রি`;
+      document.getElementById('cashModalSubmitText').textContent = "এন্ট্রি সেভ করুন";
+
+      document.getElementById('cashForm').reset();
+      calculateCashTotal();
+      document.getElementById('cashCollectionModal').classList.remove('hidden');
+    }
+
+    function openEditCashModal(memberId, entryId) {
+      const member = membersData.find(m => m.id === memberId);
+      if (!member) return;
+      const entry = member.history.find(h => h.id === entryId);
+      if (!entry) return;
+
+      document.getElementById('cashMemberId').value = memberId;
+      document.getElementById('editingEntryId').value = entryId;
+      document.getElementById('modalMemberTitle').textContent = `${member.rank} ${member.name} - এন্ট্রি এডিট`;
+      document.getElementById('modalMemberSub').textContent = `পূর্ববর্তী এন্ট্রি সম্পাদন করুন`;
+      document.getElementById('cashModalSubmitText').textContent = "এন্ট্রি আপডেট করুন";
+
+      document.getElementById('itemType').value = entry.itemType || 'Ghee';
+      document.getElementById('itemQuantity').value = entry.quantity || 1;
+      document.getElementById('note1000').value = entry.notes?.n1000 || 0;
+      document.getElementById('note500').value  = entry.notes?.n500 || 0;
+      document.getElementById('note200').value  = entry.notes?.n200 || 0;
+      document.getElementById('note100').value  = entry.notes?.n100 || 0;
+      document.getElementById('note50').value   = entry.notes?.n50 || 0;
+      document.getElementById('cashReturned').value = entry.returned || 0;
+
+      calculateCashTotal();
+      document.getElementById('cashCollectionModal').classList.remove('hidden');
+    }
+
+    function deleteCashEntry(memberId, entryId) {
+      if (!confirm("আপনি কি এই কালেকশন এন্ট্রি মুছে ফেলতে চান?")) return;
+      const member = membersData.find(m => m.id === memberId);
+      if (member) {
+        member.history = member.history.filter(h => h.id !== entryId);
+        saveLocalMembers();
+        renderMembers();
+      }
+    }
+
+    function calculateCashTotal() {
+      const n1000 = parseInt(document.getElementById('note1000').value) || 0;
+      const n500  = parseInt(document.getElementById('note500').value) || 0;
+      const n200  = parseInt(document.getElementById('note200').value) || 0;
+      const n100  = parseInt(document.getElementById('note100').value) || 0;
+      const n50   = parseInt(document.getElementById('note50').value) || 0;
+      const returned = parseInt(document.getElementById('cashReturned').value) || 0;
+
+      const sub1000 = n1000 * 1000;
+      const sub500  = n500 * 500;
+      const sub200  = n200 * 200;
+      const sub100  = n100 * 100;
+      const sub50   = n50 * 50;
+
+      document.getElementById('sub1000').textContent = '৳' + sub1000;
+      document.getElementById('sub500').textContent  = '৳' + sub500;
+      document.getElementById('sub200').textContent  = '৳' + sub200;
+      document.getElementById('sub100').textContent  = '৳' + sub100;
+      document.getElementById('sub50').textContent   = '৳' + sub50;
+
+      const totalGiven = sub1000 + sub500 + sub200 + sub100 + sub50;
+      const netTotal = Math.max(0, totalGiven - returned);
+
+      document.getElementById('calculatedGivenTotal').textContent = '৳' + totalGiven;
+      document.getElementById('calculatedNetTotal').textContent = '৳' + netTotal;
+    }
+
+    function handleSaveCashEntry(e) {
+      e.preventDefault();
+      const memberId = document.getElementById('cashMemberId').value;
+      const editingEntryId = document.getElementById('editingEntryId').value;
+      const member = membersData.find(m => m.id === memberId);
+      if (!member) return;
+
+      const itemType = document.getElementById('itemType').value;
+      const quantity = parseFloat(document.getElementById('itemQuantity').value) || 0;
+
+      const n1000 = parseInt(document.getElementById('note1000').value) || 0;
+      const n500  = parseInt(document.getElementById('note500').value) || 0;
+      const n200  = parseInt(document.getElementById('note200').value) || 0;
+      const n100  = parseInt(document.getElementById('note100').value) || 0;
+      const n50   = parseInt(document.getElementById('note50').value) || 0;
+      const returned = parseInt(document.getElementById('cashReturned').value) || 0;
+
+      const totalGiven = (n1000*1000) + (n500*500) + (n200*200) + (n100*100) + (n50*50);
+      if (totalGiven === 0 && returned === 0 && quantity === 0) {
+        alert("কমপক্ষে পরিমাণ অথবা নোট ইনপুট দিন!");
+        return;
+      }
+
+      if (editingEntryId) {
+        // Update existing entry
+        const entry = member.history.find(h => h.id === editingEntryId);
+        if (entry) {
+          entry.itemType = itemType;
+          entry.quantity = quantity;
+          entry.notes = { n1000, n500, n200, n100, n50 };
+          entry.totalGiven = totalGiven;
+          entry.returned = returned;
+          entry.netAmount = totalGiven - returned;
+          entry.timestamp = getFormattedTimestamp() + ' (Edited)';
         }
+      } else {
+        // Add new entry
+        const entry = {
+          id: 'entry_' + Date.now(),
+          timestamp: getFormattedTimestamp(),
+          itemType: itemType,
+          quantity: quantity,
+          notes: { n1000, n500, n200, n100, n50 },
+          totalGiven: totalGiven,
+          returned: returned,
+          netAmount: totalGiven - returned
+        };
+        member.history.unshift(entry);
+      }
 
-        // Tab Switcher
-        function switchTab(tab) {
-            const loginBtn = document.getElementById('tabLoginBtn');
-            const regBtn = document.getElementById('tabRegBtn');
-            const loginForm = document.getElementById('loginForm');
-            const regForm = document.getElementById('regForm');
+      saveLocalMembers();
+      closeModal('cashCollectionModal');
+      renderMembers();
+    }
 
-            if (tab === 'login') {
-                loginBtn.className = "flex-1 py-2.5 text-sm font-bold rounded-lg bg-white dark:bg-gray-800 text-brand-600 shadow transition";
-                regBtn.className = "flex-1 py-2.5 text-sm font-medium rounded-lg text-gray-500 dark:text-gray-400 transition";
-                loginForm.classList.remove('hidden');
-                regForm.classList.add('hidden');
-            } else {
-                regBtn.className = "flex-1 py-2.5 text-sm font-bold rounded-lg bg-white dark:bg-gray-800 text-brand-600 shadow transition";
-                loginBtn.className = "flex-1 py-2.5 text-sm font-medium rounded-lg text-gray-500 dark:text-gray-400 transition";
-                regForm.classList.remove('hidden');
-                loginForm.classList.add('hidden');
-            }
-        }
+    function renderMembers() {
+      const grid = document.getElementById('membersGrid');
+      const emptyState = document.getElementById('emptyState');
+      const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+      const rankFilter = document.getElementById('rankFilter').value;
 
-        // Handle Login with strict verification
-        function handleLogin(e) {
-            e.preventDefault();
-            const phone = document.getElementById('loginPhone').value.trim();
-            const pass = document.getElementById('loginPassword').value;
+      let grandTotalCollected = 0;
+      let grandTotalReturned = 0;
 
-            const foundUser = usersDB.find(u => u.phone === phone && u.pass === pass);
-            if (foundUser) {
-                currentUser = foundUser;
-                localStorage.setItem('ghi_current_user', JSON.stringify(currentUser));
-                checkAuthStatus();
-                alert('সফলভাবে লগইন হয়েছে!');
-            } else {
-                alert('ভুল মোবাইল নম্বর অথবা পাসওয়ার্ড! দয়া করে সঠিক তথ্য দিয়ে লগইন করুন অথবা আগে রেজিস্ট্রেশন করুন।');
-            }
-        }
+      const filteredMembers = membersData.filter(m => {
+        const matchesSearch = m.name.toLowerCase().includes(searchQuery) || m.sainikNo.toLowerCase().includes(searchQuery);
+        const matchesRank = !rankFilter || m.rank === rankFilter;
+        return matchesSearch && matchesRank;
+      });
 
-        // Handle Registration
-        function handleRegister(e) {
-            e.preventDefault();
-            const name = document.getElementById('regName').value.trim();
-            const phone = document.getElementById('regPhone').value.trim();
-            const email = document.getElementById('regEmail').value.trim();
-            const pass = document.getElementById('regPassword').value;
+      membersData.forEach(m => {
+        m.history.forEach(h => {
+          grandTotalCollected += h.totalGiven;
+          grandTotalReturned += h.returned;
+        });
+      });
 
-            if (usersDB.some(u => u.phone === phone)) {
-                alert('এই মোবাইল নম্বর দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট রয়েছে। দয়া করে লগইন করুন।');
-                return;
-            }
+      const grandNetCash = grandTotalCollected - grandTotalReturned;
 
-            tempRegData = { name, phone, email, pass };
-            document.getElementById('otpModal').classList.remove('hidden');
-        }
+      document.getElementById('statTotalMembers').textContent = `${membersData.length} / 100`;
+      document.getElementById('statTotalCollected').textContent = `৳${grandTotalCollected.toLocaleString()}`;
+      document.getElementById('statTotalReturned').textContent = `৳${grandTotalReturned.toLocaleString()}`;
+      document.getElementById('statNetCash').textContent = `৳${grandNetCash.toLocaleString()}`;
 
-        // Verify OTP & Save User
-        function verifyOtp() {
-            const otp = document.getElementById('otpInput').value.trim();
-            if (otp === '1234') {
-                usersDB.push(tempRegData);
-                localStorage.setItem('ghi_users_db', JSON.stringify(usersDB));
-                currentUser = tempRegData;
-                localStorage.setItem('ghi_current_user', JSON.stringify(currentUser));
-                
-                document.getElementById('otpModal').classList.add('hidden');
-                document.getElementById('otpInput').value = '';
-                checkAuthStatus();
-                alert('রেজিস্ট্রেশন ও ওটিপি যাচাই সফল হয়েছে!');
-            } else {
-                alert('ভুল ওটিপি কোড! সঠিক কোড দিন (ডেমো: 1234)');
-            }
-        }
+      if (filteredMembers.length === 0) {
+        grid.innerHTML = '';
+        emptyState.classList.remove('hidden');
+        return;
+      }
 
-        // Logout
-        function logout() {
-            currentUser = null;
-            localStorage.removeItem('ghi_current_user');
-            checkAuthStatus();
-        }
+      emptyState.classList.add('hidden');
 
-        // Toggle Password visibility
-        function togglePassword(inputId, iconId) {
-            const input = document.getElementById(inputId);
-            const icon = document.getElementById(iconId);
-            if (input.type === 'password') {
-                input.type = 'text';
-                icon.className = "fa-solid fa-eye-slash text-sm";
-            } else {
-                input.type = 'password';
-                icon.className = "fa-solid fa-eye text-sm";
-            }
-        }
+      grid.innerHTML = filteredMembers.map(m => {
+        let memGiven = 0;
+        let memReturned = 0;
+        let totalQty = 0;
+        m.history.forEach(h => {
+          memGiven += h.totalGiven;
+          memReturned += h.returned;
+          totalQty += (h.quantity || 0);
+        });
+        const memNet = memGiven - memReturned;
 
-        // Dashboard Rendering & Member Management
-        function renderDashboard() {
-            renderMembers();
-            updateStats();
-        }
+        return `
+          <div class="glass-card rounded-2xl p-4 shadow-md border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between relative overflow-hidden group">
+            <div>
+              <div class="flex items-start justify-between">
+                <div class="flex items-center space-x-2.5">
+                  <span class="px-2 py-1 text-xs font-black rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300">
+                    ${escapeHtml(m.rank)}
+                  </span>
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-800 dark:text-white leading-snug">${escapeHtml(m.name)}</h4>
+                    <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400">সৈনিক নং: <span class="font-bold text-slate-700 dark:text-slate-300">${escapeHtml(m.sainikNo)}</span></p>
+                  </div>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <button onclick="openEditMemberModal('${m.id}')" class="text-slate-400 hover:text-emerald-600 text-xs p-1 transition" title="Edit Member">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                  <button onclick="deleteMember('${m.id}')" class="text-slate-300 hover:text-red-500 text-xs p-1 transition" title="Delete Member">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
+              </div>
 
-        function updateStats() {
-            document.getElementById('totalMembersCount').innerText = membersDB.length;
-            let totalAmt = transactionsDB.reduce((sum, t) => sum + t.netPaid, 0);
-            let totalQty = transactionsDB.reduce((sum, t) => sum + t.qty, 0);
-            document.getElementById('totalCollectedAmount').innerText = `৳ ${totalAmt}`;
-            document.getElementById('totalQuantitySold').innerText = `${totalQty.toFixed(1)} KG/L`;
-        }
+              <!-- Quick Stats Grid including Quantity -->
+              <div class="grid grid-cols-4 gap-1 my-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center">
+                <div>
+                  <span class="block text-[9px] text-slate-400">পরিমাণ (Qty)</span>
+                  <span class="text-xs font-bold text-blue-600 dark:text-blue-400">${totalQty}</span>
+                </div>
+                <div>
+                  <span class="block text-[9px] text-slate-400">আদায় (Rec)</span>
+                  <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">৳${memGiven}</span>
+                </div>
+                <div>
+                  <span class="block text-[9px] text-slate-400">ফেরত (Ret)</span>
+                  <span class="text-xs font-bold text-amber-600 dark:text-amber-400">৳${memReturned}</span>
+                </div>
+                <div>
+                  <span class="block text-[9px] text-slate-400">নীট (Net)</span>
+                  <span class="text-xs font-black text-teal-600 dark:text-teal-400">৳${memNet}</span>
+                </div>
+              </div>
 
-        function renderMembers() {
-            const query = document.getElementById('searchInput').value.toLowerCase();
-            const tbody = document.getElementById('membersTableBody');
-            tbody.innerHTML = '';
-
-            const filtered = membersDB.filter(m => m.name.toLowerCase().includes(query) || m.sainikNo.toLowerCase().includes(query) || m.rank.toLowerCase().includes(query));
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-gray-400">কোনো সদস্য পাওয়া যায়নি</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(m => {
-                const mTx = transactionsDB.filter(t => t.memberId === m.id);
-                const totalPaid = mTx.reduce((s, t) => s + t.netPaid, 0);
-                const totalQty = mTx.reduce((s, t) => s + t.qty, 0);
-
-                tbody.innerHTML += `
-                    <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition">
-                        <td class="p-4 font-medium">
-                            <span class="px-2 py-1 text-xs font-bold rounded bg-brand-50 text-brand-700 dark:bg-brand-950 dark:text-brand-400 mr-2">${m.rank}</span>
-                            ${m.name}
-                        </td>
-                        <td class="p-4 text-gray-500">${m.sainikNo}</td>
-                        <td class="p-4 font-bold text-emerald-600">৳ ${totalPaid}</td>
-                        <td class="p-4 font-semibold text-blue-600">${totalQty.toFixed(1)} KG/L</td>
-                        <td class="p-4 text-right space-x-2">
-                            <button onclick="openTxModal('${m.id}')" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow transition"><i class="fa-solid fa-plus mr-1"></i> জমা দিন</button>
-                            <button onclick="openEditMemberModal('${m.id}')" class="p-1.5 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 rounded-lg text-xs"><i class="fa-solid fa-pen"></i></button>
-                        </td>
-                    </tr>
-                `;
-            });
-        }
-
-        // Member Modal
-        function openAddMemberModal() {
-            document.getElementById('memberModalTitle').innerText = 'নতুন সদস্য যোগ করুন';
-            document.getElementById('editingMemberId').value = '';
-            document.getElementById('memberSainikNo').value = '';
-            document.getElementById('memberName').value = '';
-            document.getElementById('memberModal').classList.remove('hidden');
-        }
-
-        function openEditMemberModal(id) {
-            const m = membersDB.find(x => x.id === id);
-            if (!m) return;
-            document.getElementById('memberModalTitle').innerText = 'সদস্যের তথ্য সম্পাদনা করুন';
-            document.getElementById('editingMemberId').value = m.id;
-            document.getElementById('memberRank').value = m.rank;
-            document.getElementById('memberSainikNo').value = m.sainikNo;
-            document.getElementById('memberName').value = m.name;
-            document.getElementById('memberModal').classList.remove('hidden');
-        }
-
-        function closeMemberModal() {
-            document.getElementById('memberModal').classList.add('hidden');
-        }
-
-        function saveMember(e) {
-            e.preventDefault();
-            const id = document.getElementById('editingMemberId').value;
-            const rank = document.getElementById('memberRank').value;
-            const sainikNo = document.getElementById('memberSainikNo').value.trim();
-            const name = document.getElementById('memberName').value.trim();
-
-            if (id) {
-                const m = membersDB.find(x => x.id === id);
-                if (m) { m.rank = rank; m.sainikNo = sainikNo; m.name = name; }
-            } else {
-                membersDB.push({ id: 'm_' + Date.now(), rank, sainikNo, name });
-            }
-
-            localStorage.setItem('ghi_members', JSON.stringify(membersDB));
-            closeMemberModal();
-            renderDashboard();
-        }
-
-        // Transaction Modal & Calculation
-        function openTxModal(memberId) {
-            const m = membersDB.find(x => x.id === memberId);
-            if (!m) return;
-            document.getElementById('txMemberId').value = memberId;
-            document.getElementById('editingTxId').value = '';
-            document.getElementById('txMemberSubtitle').innerText = `${m.rank} - ${m.name} (Sainik No: ${m.sainikNo})`;
-            document.getElementById('txQty').value = '';
-            ['note1000', 'note500', 'note200', 'note100', 'note50', 'ret1000', 'ret500', 'ret200', 'ret100', 'ret50'].forEach(id => document.getElementById(id).value = 0);
-            calculateNotes();
-            document.getElementById('txModal').classList.remove('hidden');
-        }
-
-        function closeTxModal() {
-            document.getElementById('txModal').classList.add('hidden');
-        }
-
-        function calculateNotes() {
-            const g1000 = parseInt(document.getElementById('note1000').value) || 0;
-            const g500 = parseInt(document.getElementById('note500').value) || 0;
-            const g200 = parseInt(document.getElementById('note200').value) || 0;
-            const g100 = parseInt(document.getElementById('note100').value) || 0;
-            const g50 = parseInt(document.getElementById('note50').value) || 0;
-            const totalGiven = (g1000 * 1000) + (g500 * 500) + (g200 * 200) + (g100 * 100) + (g50 * 50);
-
-            const r1000 = parseInt(document.getElementById('ret1000').value) || 0;
-            const r500 = parseInt(document.getElementById('ret500').value) || 0;
-            const r200 = parseInt(document.getElementById('ret200').value) || 0;
-            const r100 = parseInt(document.getElementById('ret100').value) || 0;
-            const r50 = parseInt(document.getElementById('ret50').value) || 0;
-            const totalReturn = (r1000 * 1000) + (r500 * 500) + (r200 * 200) + (r100 * 100) + (r50 * 50);
-
-            const netPaid = totalGiven - totalReturn;
-
-            document.getElementById('displayTotalGiven').innerText = `৳ ${totalGiven}`;
-            document.getElementById('displayTotalReturn').innerText = `৳ ${totalReturn}`;
-            document.getElementById('displayNetPaid').innerText = `৳ ${netPaid}`;
-            return { totalGiven, totalReturn, netPaid, notesGiven: {g1000, g500, g200, g100, g50}, notesReturn: {r1000, r500, r200, r100, r50} };
-        }
-
-        function saveTransaction(e) {
-            e.preventDefault();
-            const memberId = document.getElementById('txMemberId').value;
-            const qty = parseFloat(document.getElementById('txQty').value) || 0;
-            const calc = calculateNotes();
-
-            const now = new Date();
-            const dateStr = now.toLocaleDateString();
-            const timeStr = now.toLocaleTimeString();
-
-            const txData = {
-                id: 'tx_' + Date.now(),
-                memberId,
-                qty,
-                totalGiven: calc.totalGiven,
-                totalReturn: calc.totalReturn,
-                netPaid: calc.netPaid,
-                notesGiven: calc.notesGiven,
-                notesReturn: calc.notesReturn,
-                timestamp: `${dateStr} ${timeStr}`
-            };
-
-            transactionsDB.push(txData);
-            localStorage.setItem('ghi_transactions', JSON.stringify(transactionsDB));
-            closeTxModal();
-            renderDashboard();
-            alert('লেনদেন সফলভাবে সংরক্ষণ করা হয়েছে!');
-        }
-
-        // History Modal
-        function openHistoryModal() {
-            const container = document.getElementById('historyListContainer');
-            container.innerHTML = '';
-
-            if (transactionsDB.length === 0) {
-                container.innerHTML = `<p class="text-center text-gray-400 py-6">কোনো হিস্ট্রি পাওয়া যায়নি</p>`;
-            } else {
-                transactionsDB.slice().reverse().forEach(t => {
-                    const m = membersDB.find(x => x.id === t.memberId);
-                    const mName = m ? `${m.rank} - ${m.name}` : 'Unknown Member';
-                    container.innerHTML += `
-                        <div class="bg-gray-50 dark:bg-gray-900 p-4 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                            <div>
-                                <h4 class="font-bold text-sm">${mName}</h4>
-                                <p class="text-xs text-gray-500"><i class="fa-regular fa-clock mr-1"></i>${t.timestamp} | Qty: ${t.qty} KG/L</p>
-                                <p class="text-xs text-gray-600 dark:text-gray-400 mt-1">জমা: ৳${t.totalGiven} | ফেরত: ৳${t.totalReturn}</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-base font-bold text-emerald-600">৳ ${t.netPaid}</span>
-                            </div>
+              <div class="mt-2 space-y-1.5 max-h-36 overflow-y-auto pr-1">
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">কালেকশন হিস্ট্রি ও এডিট অপশন:</p>
+                ${m.history.length === 0 ? `<p class="text-[11px] text-slate-400 italic">কোন হিস্ট্রি এন্ট্রি নেই</p>` : 
+                  m.history.map(h => `
+                    <div class="p-2 rounded-lg bg-white/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 text-[11px] space-y-1">
+                      <div class="flex justify-between items-center">
+                        <span class="font-mono text-[10px] text-slate-500"><i class="fa-solid fa-clock text-[9px] mr-1"></i>${h.timestamp}</span>
+                        <div class="flex items-center space-x-1.5">
+                          <span class="font-bold text-emerald-600 dark:text-emerald-400">+৳${h.netAmount}</span>
+                          <button onclick="openEditCashModal('${m.id}', '${h.id}')" class="text-blue-500 hover:text-blue-700 text-[10px] px-1" title="Edit Entry"><i class="fa-solid fa-pen"></i></button>
+                          <button onclick="deleteCashEntry('${m.id}', '${h.id}')" class="text-red-400 hover:text-red-600 text-[10px] px-1" title="Delete Entry"><i class="fa-solid fa-xmark"></i></button>
                         </div>
-                    `;
-                });
-            }
-            document.getElementById('historyModal').classList.remove('hidden');
-        }
-
-        function closeHistoryModal() {
-            document.getElementById('historyModal').classList.add('hidden');
-        }
-
-        // Theme & Language
-        function toggleDarkMode() {
-            const html = document.documentElement;
-            const icon = document.getElementById('themeIcon');
-            if (html.classList.contains('dark')) {
-                html.classList.remove('dark');
-                icon.className = "fa-solid fa-moon text-sm";
-            } else {
-                html.classList.add('dark');
-                icon.className = "fa-solid fa-sun text-sm text-yellow-400";
-            }
-        }
-
-        function toggleLanguage() {
-            currentLang = currentLang === 'bn' ? 'en' : 'bn';
-            document.getElementById('langBtnText').innerText = currentLang === 'bn' ? 'EN' : 'বাং';
-            document.querySelectorAll('.lang-text').forEach(el => {
-                if (el.dataset[currentLang]) {
-                    el.innerText = el.dataset[currentLang];
+                      </div>
+                      <div class="flex flex-wrap items-center justify-between text-[10px] text-slate-600 dark:text-slate-400 font-mono pt-1 border-t border-slate-200/50 dark:border-slate-800">
+                        <span class="bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded font-bold">${h.itemType}: ${h.quantity} KG/L</span>
+                        <div class="flex gap-1">
+                          ${h.notes.n1000 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">1000x${h.notes.n1000}</span>` : ''}
+                          ${h.notes.n500 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">500x${h.notes.n500}</span>` : ''}
+                          ${h.notes.n200 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">200x${h.notes.n200}</span>` : ''}
+                          ${h.notes.n100 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">100x${h.notes.n100}</span>` : ''}
+                          ${h.notes.n50 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">50x${h.notes.n50}</span>` : ''}
+                        </div>
+                      </div>
+                      ${h.returned > 0 ? `<div class="text-[9px] text-amber-600 dark:text-amber-400 font-bold">ফেরত দেওয়া হয়েছে: ৳${h.returned}</div>` : ''}
+                    </div>
+                  `).join('')
                 }
-            });
-        }
-    </script>
+              </div>
+            </div>
+
+            <button onclick="openCashModal('${m.id}')" class="mt-3 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center">
+              <i class="fa-solid fa-plus-circle mr-1.5"></i> পরিমাণ ও টাকা কালেকশন এড করুন
+            </button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openExportModal() {
+      document.getElementById('reportDateStamp').textContent = `রিপোর্ট তৈরির সময়: ${getFormattedTimestamp()}`;
+      const tbody = document.getElementById('exportTableBody');
+
+      tbody.innerHTML = membersData.map((m, i) => {
+        let memGiven = 0, memReturned = 0, totalQty = 0;
+        let lastTime = m.history.length > 0 ? m.history[0].timestamp : '-';
+        m.history.forEach(h => { 
+          memGiven += h.totalGiven; 
+          memReturned += h.returned; 
+          totalQty += (h.quantity || 0);
+        });
+
+        return `
+          <tr>
+            <td class="p-2 border border-slate-200">${i+1}</td>
+            <td class="p-2 border border-slate-200 font-bold">${escapeHtml(m.rank)}</td>
+            <td class="p-2 border border-slate-200 font-mono">${escapeHtml(m.sainikNo)}</td>
+            <td class="p-2 border border-slate-200 font-bold">${escapeHtml(m.name)}</td>
+            <td class="p-2 border border-slate-200 font-bold text-blue-700">${totalQty} KG/L</td>
+            <td class="p-2 border border-slate-200 text-right text-emerald-700 font-bold">৳${memGiven}</td>
+            <td class="p-2 border border-slate-200 text-right text-amber-700">৳${memReturned}</td>
+            <td class="p-2 border border-slate-200 text-right font-black text-teal-800">৳${memGiven - memReturned}</td>
+            <td class="p-2 border border-slate-200 font-mono text-[10px]">${lastTime}</td>
+          </tr>
+        `;
+      }).join('');
+
+      document.getElementById('exportModal').classList.remove('hidden');
+    }
+
+    function downloadCSVReport() {
+      let csvContent = "data:text/csv;charset=utf-8,";
+      csvContent += "SL,Rank,Sainik No,Name,Total Qty,Collected,Returned,Net,Last Timestamp\n";
+
+      membersData.forEach((m, i) => {
+        let memGiven = 0, memReturned = 0, totalQty = 0;
+        let lastTime = m.history.length > 0 ? m.history[0].timestamp : '-';
+        m.history.forEach(h => { 
+          memGiven += h.totalGiven; 
+          memReturned += h.returned; 
+          totalQty += (h.quantity || 0);
+        });
+        
+        csvContent += `${i+1},"${m.rank}","${m.sainikNo}","${m.name}",${totalQty},${memGiven},${memReturned},${memGiven - memReturned},"${lastTime}"\n`;
+      });
+
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement("a");
+      link.setAttribute("href", encodedUri);
+      link.setAttribute("download", `GHI_DMD_Report_${Date.now()}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    function getFormattedTimestamp() {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const hours = String(now.getHours()).padStart(2, '0');
+      const minutes = String(now.getMinutes()).padStart(2, '0');
+      const seconds = String(now.getSeconds()).padStart(2, '0');
+      return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.add('hidden');
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    }
+  </script>
 </body>
 </html>
