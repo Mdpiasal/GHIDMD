@@ -153,7 +153,7 @@
             </div>
         </div>
 
-        <!-- DASHBOARD SECTION (Hidden by default until logged in) -->
+        <!-- DASHBOARD SECTION (Original Layout Restored) -->
         <div id="dashboardContainer" class="w-full max-w-7xl hidden space-y-6">
             
             <!-- Summary Stats Card -->
@@ -447,7 +447,6 @@
             const email = document.getElementById('regEmail').value.trim();
             const pass = document.getElementById('regPassword').value;
 
-            // Check if phone already registered
             if (usersDB.some(u => u.phone === phone)) {
                 alert('এই মোবাইল নম্বর দিয়ে ইতিমধ্যে একটি অ্যাকাউন্ট রয়েছে। দয়া করে লগইন করুন।');
                 return;
