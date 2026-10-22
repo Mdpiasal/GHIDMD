@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GHI DMD</title>
+  <title>GHI DMD - ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Font Awesome Icons -->
@@ -47,7 +47,6 @@
       transition: background 0.3s ease;
     }
 
-    /* Background image with Cow & Milk theme */
     .app-bg-light {
       background-image: linear-gradient(rgba(255, 255, 255, 0.88), rgba(240, 253, 244, 0.92)), 
                         url('https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?q=80&w=1600&auto=format&fit=crop');
@@ -58,7 +57,6 @@
                         url('https://images.unsplash.com/photo-1527153857715-3908f2bae5e8?q=80&w=1600&auto=format&fit=crop');
     }
 
-    /* Glassmorphism elements */
     .glass-card {
       background: rgba(255, 255, 255, 0.9);
       backdrop-filter: blur(10px);
@@ -70,7 +68,6 @@
       -webkit-backdrop-filter: blur(10px);
     }
 
-    /* Custom scrollbars */
     ::-webkit-scrollbar {
       width: 6px;
       height: 6px;
@@ -84,13 +81,12 @@
     }
   </style>
 
-  <!-- Firebase Script Import -->
+  <!-- Firebase Script Imports -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-    // Global App Configuration & State
     const appId = typeof __app_id !== 'undefined' ? __app_id : 'ghi-dmd-app';
     const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
 
@@ -98,8 +94,6 @@
       db: null,
       auth: null,
       currentUser: null,
-      userRole: 'user', // 'admin' or 'user'
-      isApproved: false,
       appId: appId
     };
 
@@ -109,7 +103,6 @@
         window.GHI_APP.db = getFirestore(app);
         window.GHI_APP.auth = getAuth(app);
 
-        // Authenticate base connection
         const token = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
         if (token) {
           signInWithCustomToken(window.GHI_APP.auth, token).catch(() => signInAnonymously(window.GHI_APP.auth));
@@ -117,7 +110,7 @@
           signInAnonymously(window.GHI_APP.auth);
         }
       } catch (err) {
-        console.warn("Firebase initialized in local offline fallback mode:", err);
+        console.warn("Firebase offline mode fallback:", err);
       }
     }
   </script>
@@ -130,15 +123,15 @@
       
       <!-- App Brand Title -->
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-green-500/20">
-          <i class="fa-solid font-bold text-xl">🥛</i>
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-green-600 to-emerald-400 flex items-center justify-center text-white shadow-md shadow-green-500/20 text-xl font-bold">
+          🥛
         </div>
         <div>
           <h1 class="text-xl md:text-2xl font-black tracking-tight bg-gradient-to-r from-emerald-700 via-green-600 to-teal-700 dark:from-emerald-400 dark:to-teal-300 bg-clip-text text-transparent">
             GHI DMD
           </h1>
           <p class="text-[10px] md:text-xs text-slate-500 dark:text-slate-400 font-medium tracking-wide" id="subHeaderTag">
-            ঘি ও দুধ কালেকশন হিসাব ব্যবস্থাপনা
+            ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট
           </p>
         </div>
       </div>
@@ -147,22 +140,22 @@
       <div class="flex items-center space-x-2 md:space-x-3">
         
         <!-- Language Switcher -->
-        <button id="langToggleBtn" onclick="toggleLanguage()" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition">
+        <button onclick="toggleLanguage()" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition">
           <i class="fa-solid fa-globe text-emerald-600 dark:text-emerald-400 mr-1"></i>
           <span id="langBtnText">EN</span>
         </button>
 
         <!-- Theme Mode Toggle -->
-        <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition">
+        <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 transition">
           <i class="fa-solid fa-moon dark:hidden text-indigo-600"></i>
           <i class="fa-solid fa-sun hidden dark:block text-amber-400"></i>
         </button>
 
-        <!-- Active User Profile / Logout Button (Hidden when logged out) -->
+        <!-- Active User Profile / Logout Button -->
         <div id="userProfileNav" class="hidden flex items-center space-x-2 pl-2 border-l border-slate-300 dark:border-slate-700">
           <div class="text-right hidden sm:block">
             <p id="navUserName" class="text-xs font-bold text-slate-800 dark:text-slate-200 leading-tight"></p>
-            <span id="navUserBadge" class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 font-semibold"></span>
+            <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-300 font-semibold">Active</span>
           </div>
           <button onclick="handleLogout()" class="p-2 rounded-lg bg-red-50 hover:bg-red-100 dark:bg-red-950/40 dark:hover:bg-red-900/60 text-red-600 dark:text-red-400 transition" title="Logout">
             <i class="fa-solid fa-right-from-bracket"></i>
@@ -176,13 +169,10 @@
   <!-- MAIN CONTAINER -->
   <main class="flex-grow max-w-7xl w-full mx-auto p-3 sm:p-4 md:p-6">
 
-    <!-- 1. AUTHENTICATION SECTION (LOGIN / REGISTRATION / WAITING) -->
+    <!-- 1. AUTHENTICATION SECTION -->
     <section id="authSection" class="max-w-md mx-auto my-6 sm:my-10">
-      
-      <!-- Card wrapper -->
       <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-200/80 dark:border-slate-800/80 relative overflow-hidden">
         
-        <!-- Header Banner -->
         <div class="text-center mb-6">
           <div class="w-16 h-16 mx-auto mb-3 rounded-2xl bg-gradient-to-tr from-green-600 to-emerald-500 text-white flex items-center justify-center text-3xl shadow-lg shadow-green-500/30">
             🐄
@@ -222,14 +212,6 @@
             </div>
           </div>
 
-          <!-- Quick Admin Direct Login Shortcut -->
-          <div class="flex items-center justify-between text-xs pt-1">
-            <label class="flex items-center text-slate-600 dark:text-slate-400 cursor-pointer">
-              <input type="checkbox" id="adminLoginCheck" class="rounded text-emerald-600 focus:ring-emerald-500 mr-1.5">
-              <span data-i18n="loginAsAdmin">এডমিন হিসেবে চেষ্টা করুন</span>
-            </label>
-          </div>
-
           <button type="submit" class="w-full py-2.5 px-4 bg-gradient-to-r from-emerald-600 to-green-600 hover:from-emerald-700 hover:to-green-700 text-white font-bold text-sm rounded-xl shadow-lg shadow-emerald-600/20 transition transform active:scale-[0.98]">
             <span data-i18n="login">লগইন করুন</span>
           </button>
@@ -243,7 +225,7 @@
           </div>
 
           <div>
-            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="mobileNumber">মোবাইল নম্বর (SMS Verified)</label>
+            <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="mobileNumber">মোবাইল নম্বর (OTP Verified)</label>
             <input type="tel" id="regMobile" required placeholder="01XXXXXXXXX" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/70 dark:bg-slate-800/80 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition">
           </div>
 
@@ -269,21 +251,7 @@
           </button>
         </form>
 
-        <!-- PENDING ADMIN APPROVAL DISPLAY -->
-        <div id="pendingApprovalView" class="hidden text-center py-4 space-y-4">
-          <div class="w-16 h-16 mx-auto rounded-full bg-amber-100 dark:bg-amber-900/50 text-amber-600 dark:text-amber-400 flex items-center justify-center text-2xl animate-pulse">
-            <i class="fa-solid fa-clock"></i>
-          </div>
-          <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 text-amber-900 dark:text-amber-200">
-            <h3 class="font-bold text-base mb-1" id="pendingMsgTitle">Well come! to ghi dmd apps waiting for admin approvel</h3>
-            <p class="text-xs opacity-90" id="pendingMsgSub">আপনার আইডি তৈরি হয়েছে। এডমিন অনুমোদন দেওয়া পর্যন্ত অনুগ্রহ করে অপেক্ষা করুন।</p>
-          </div>
-          <button onclick="checkApprovalStatus()" class="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-xs font-bold rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600 transition">
-            <i class="fa-solid fa-rotate mr-1"></i> <span data-i18n="refreshStatus">স্ট্যাটাস চেক করুন</span>
-          </button>
-        </div>
-
-        <!-- MANDATORY ADMIN CONTACT NOTICE BOX -->
+        <!-- MANDATORY CONTACT NOTICE BOX -->
         <div class="mt-6 pt-4 border-t border-slate-200 dark:border-slate-800 text-center">
           <p class="text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/50 p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-800/50">
             <i class="fa-solid fa-circle-info text-emerald-600 mr-1"></i>
@@ -296,7 +264,7 @@
     </section>
 
 
-    <!-- 2. MAIN DASHBOARD SECTION (MEMBER & CASH MANAGEMENT) -->
+    <!-- 2. MAIN DASHBOARD SECTION -->
     <section id="dashboardSection" class="hidden space-y-6">
 
       <!-- DASHBOARD METRICS SUMMARY CARDS -->
@@ -342,20 +310,6 @@
         </div>
       </div>
 
-      <!-- ADMIN APPROVAL MANAGEMENT PANEL (VISIBLE ONLY TO ADMIN) -->
-      <div id="adminPanel" class="hidden glass-card p-4 sm:p-5 rounded-2xl border-2 border-emerald-500/50 shadow-md">
-        <div class="flex items-center justify-between mb-3">
-          <h3 class="text-base font-bold text-emerald-700 dark:text-emerald-400 flex items-center">
-            <i class="fa-solid fa-user-shield mr-2"></i>
-            <span data-i18n="adminPanelTitle">এডমিন প্যানেল: ইউজার অনুমোদন ব্যবস্থাপনা</span>
-          </h3>
-          <span class="text-xs bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200 px-2 py-0.5 rounded font-bold">Admin Active</span>
-        </div>
-        <div id="pendingUsersList" class="space-y-2 max-h-48 overflow-y-auto pr-1">
-          <!-- Dynamically populated pending users -->
-        </div>
-      </div>
-
       <!-- CONTROLS & ACTIONS BAR -->
       <div class="glass-card p-4 rounded-2xl border border-slate-200/80 dark:border-slate-800 shadow-sm flex flex-col md:flex-row gap-3 justify-between items-center">
         
@@ -390,7 +344,7 @@
         </div>
       </div>
 
-      <!-- MEMBERS COLUMN GRID VIEW -->
+      <!-- MEMBERS GRID VIEW -->
       <div id="membersGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <!-- Dynamically rendered member cards -->
       </div>
@@ -409,13 +363,13 @@
   </main>
 
 
-  <!-- MODAL 1: ADD NEW MEMBER MODAL -->
+  <!-- MODAL 1: ADD/EDIT MEMBER MODAL -->
   <div id="addMemberModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="glass-card w-full max-w-md rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4">
       <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
         <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center">
           <i class="fa-solid fa-user-plus text-emerald-600 mr-2"></i>
-          <span data-i18n="addMemberModalTitle">নতুন সদস্যের নাম ও পদবী যোগ</span>
+          <span id="memberModalTitleText">নতুন সদস্যের নাম ও পদবী যোগ</span>
         </h3>
         <button onclick="closeModal('addMemberModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -423,7 +377,7 @@
       </div>
 
       <form id="addMemberForm" onsubmit="handleSaveMember(event)" class="space-y-3">
-        <!-- Rank -->
+        <input type="hidden" id="editingMemberId">
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="rank">পদবী (Rank)</label>
           <select id="memberRank" required class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
@@ -436,13 +390,11 @@
           </select>
         </div>
 
-        <!-- Sainik Number -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="sainikNumber">সৈনিক নম্বর</label>
           <input type="text" id="memberSainikNo" required placeholder="উদাহরণ: 1234567" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
         </div>
 
-        <!-- Name -->
         <div>
           <label class="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1" data-i18n="memberName">সদস্যের নাম</label>
           <input type="text" id="memberName" required placeholder="পূর্ণ নাম লিখুন" class="w-full px-3 py-2 text-sm rounded-xl border border-slate-300 dark:border-slate-700 bg-white/80 dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
@@ -461,14 +413,14 @@
   </div>
 
 
-  <!-- MODAL 2: CASH COLLECTION & DENOMINATION CALCULATOR MODAL -->
+  <!-- MODAL 2: CASH COLLECTION & GHEE/MILK QUANTITY CALCULATOR MODAL (ADD & EDIT) -->
   <div id="cashCollectionModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4">
     <div class="glass-card w-full max-w-lg rounded-2xl p-5 sm:p-6 shadow-2xl border border-slate-200 dark:border-slate-800 max-h-[90vh] overflow-y-auto">
       
       <div class="flex items-center justify-between pb-3 border-b border-slate-200 dark:border-slate-800">
         <div>
-          <h3 class="text-base font-bold text-slate-800 dark:text-white" id="modalMemberTitle">টাকা তোলার হিসাব এড করুন</h3>
-          <p class="text-xs text-slate-500 dark:text-slate-400" id="modalMemberSub">নোটের ধরন নির্বাচন করে টাকা জমা দিন</p>
+          <h3 class="text-base font-bold text-slate-800 dark:text-white" id="modalMemberTitle">টাকা ও ঘি/দুধ পরিমাণ হিসাব এড করুন</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400" id="modalMemberSub">আইটেম, পরিমাণ এবং নোটের ধরন নির্বাচন করুন</p>
         </div>
         <button onclick="closeModal('cashCollectionModal')" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200">
           <i class="fa-solid fa-xmark text-lg"></i>
@@ -477,6 +429,23 @@
 
       <form id="cashForm" onsubmit="handleSaveCashEntry(event)" class="space-y-4 mt-3">
         <input type="hidden" id="cashMemberId">
+        <input type="hidden" id="editingEntryId">
+
+        <!-- Item & Quantity Selection -->
+        <div class="grid grid-cols-2 gap-3 bg-emerald-50/60 dark:bg-emerald-950/30 p-3 rounded-xl border border-emerald-200 dark:border-emerald-800/60">
+          <div>
+            <label class="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">পণ্যের ধরন (Item)</label>
+            <select id="itemType" class="w-full px-3 py-1.5 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500 font-semibold">
+              <option value="Ghee">ঘি (Ghee)</option>
+              <option value="Milk">দুধ (Milk)</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-emerald-900 dark:text-emerald-300 mb-1">পরিমাণ (Quantity - KG / Liter)</label>
+            <input type="number" id="itemQuantity" step="0.1" min="0.1" value="1" required class="w-full px-3 py-1.5 text-xs rounded-lg border border-emerald-300 dark:border-emerald-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500 text-right font-bold text-emerald-600 dark:text-emerald-400">
+          </div>
+        </div>
 
         <!-- Note Denomination Counter Inputs -->
         <div class="space-y-2 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl border border-slate-200 dark:border-slate-700">
@@ -485,35 +454,30 @@
             <span>সংখ্যা (Qty)</span>
           </p>
 
-          <!-- 1000 Tk Note -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 1000 Note</span>
             <input type="number" id="note1000" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
             <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub1000">৳0</span>
           </div>
 
-          <!-- 500 Tk Note -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 500 Note</span>
             <input type="number" id="note500" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
             <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub500">৳0</span>
           </div>
 
-          <!-- 200 Tk Note -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 200 Note</span>
             <input type="number" id="note200" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
             <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub200">৳0</span>
           </div>
 
-          <!-- 100 Tk Note -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 100 Note</span>
             <input type="number" id="note100" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
             <span class="text-xs font-semibold w-24 text-right text-slate-600 dark:text-slate-300" id="sub100">৳0</span>
           </div>
 
-          <!-- 50 Tk Note -->
           <div class="flex items-center justify-between gap-2">
             <span class="text-xs font-bold text-emerald-700 dark:text-emerald-400 w-24">৳ 50 Note</span>
             <input type="number" id="note50" min="0" value="0" oninput="calculateCashTotal()" class="w-24 px-2 py-1 text-xs text-center rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-emerald-500">
@@ -528,7 +492,6 @@
             <span id="calculatedGivenTotal" class="text-sm text-emerald-600 dark:text-emerald-400">৳0</span>
           </div>
 
-          <!-- Change Returned Input -->
           <div class="flex items-center justify-between pt-2 border-t border-emerald-200 dark:border-emerald-800">
             <label class="text-xs font-bold text-amber-800 dark:text-amber-300" data-i18n="returnAmount">কত টাকা ফেরত দিলেন (Change Returned):</label>
             <input type="number" id="cashReturned" min="0" value="0" oninput="calculateCashTotal()" class="w-28 px-2 py-1 text-xs font-bold text-amber-700 rounded-lg border border-amber-300 dark:border-amber-700 bg-white dark:bg-slate-900 text-right focus:ring-1 focus:ring-amber-500">
@@ -545,7 +508,7 @@
             <span data-i18n="cancel">বাতিল</span>
           </button>
           <button type="submit" class="px-5 py-2 text-xs font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 shadow-md">
-            <span data-i18n="saveEntry">এন্ট্রি সেভ করুন</span>
+            <span id="cashModalSubmitText" data-i18n="saveEntry">এন্ট্রি সেভ করুন</span>
           </button>
         </div>
       </form>
@@ -553,23 +516,23 @@
   </div>
 
 
-  <!-- MODAL 3: SMS CODE VERIFICATION MOCK MODAL -->
+  <!-- MODAL 3: SMS OTP CODE VERIFICATION MODAL -->
   <div id="smsCodeModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="glass-card w-full max-w-sm rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 text-center space-y-4">
       <div class="w-12 h-12 mx-auto rounded-full bg-emerald-100 dark:bg-emerald-900/50 text-emerald-600 flex items-center justify-center text-xl">
         <i class="fa-solid fa-comment-sms"></i>
       </div>
-      <h3 class="text-base font-bold text-slate-800 dark:text-white">মোবাইল ভেরিফিকেশন কোড</h3>
+      <h3 class="text-base font-bold text-slate-800 dark:text-white">মোবাইল OTP ভেরিফিকেশন</h3>
       <p class="text-xs text-slate-500 dark:text-slate-400">আপনার <span id="smsTargetMobile" class="font-bold text-slate-700 dark:text-slate-200"></span> নম্বরে একটি ৪ ডিজিটের সিকিউরিটি কোড পাঠানো হয়েছে।</p>
       
       <div class="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-xs font-mono text-emerald-600 font-bold">
-        [Simulated Verification Code: <span id="simulatedCode">8842</span>]
+        [OTP Code: <span id="simulatedCode">8842</span>]
       </div>
 
       <input type="text" id="smsInputCode" maxlength="4" placeholder="----" class="w-36 mx-auto text-center tracking-widest text-xl font-bold py-2 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none">
 
-      <button onclick="verifySMSCodeAndRegister()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md">
-        ভেরিফাই ও সাবমিট করুন
+      <button onclick="verifyOtpAndLoginInstantly()" class="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md">
+        ভেরিফাই ও প্রবেশ করুন
       </button>
     </div>
   </div>
@@ -577,7 +540,7 @@
 
   <!-- MODAL 4: REPORT & EXPORT MODAL -->
   <div id="exportModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="glass-card w-full max-w-2xl rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[85vh] overflow-y-auto">
+    <div class="glass-card w-full max-w-3xl rounded-2xl p-6 shadow-2xl border border-slate-200 dark:border-slate-800 space-y-4 max-h-[85vh] overflow-y-auto">
       <div class="flex items-center justify-between pb-2 border-b border-slate-200 dark:border-slate-800">
         <h3 class="text-base font-bold text-slate-800 dark:text-white flex items-center">
           <i class="fa-solid fa-print text-emerald-600 mr-2"></i>
@@ -601,7 +564,7 @@
       <div id="printableReportArea" class="bg-white text-slate-800 p-4 rounded-xl text-xs overflow-x-auto">
         <div class="text-center mb-4 border-b pb-2">
           <h2 class="text-lg font-black text-emerald-800">GHI DMD COLLECTION REPORT</h2>
-          <p class="text-[10px] text-slate-500">ঘি ও দুধ ক্যাশ কালেকশন এর সম্পূর্ণ ক্যাশ বিবরণী</p>
+          <p class="text-[10px] text-slate-500">ঘি ও দুধ ক্যাশ ও পরিমাণ কালেকশন এর সম্পূর্ণ বিবরণী</p>
           <p id="reportDateStamp" class="text-[10px] text-slate-400 mt-1"></p>
         </div>
 
@@ -612,6 +575,7 @@
               <th class="p-2 border border-slate-200">Rank</th>
               <th class="p-2 border border-slate-200">Sainik No</th>
               <th class="p-2 border border-slate-200">Name</th>
+              <th class="p-2 border border-slate-200">Total Qty (KG/L)</th>
               <th class="p-2 border border-slate-200 text-right">Collected</th>
               <th class="p-2 border border-slate-200 text-right">Returned</th>
               <th class="p-2 border border-slate-200 text-right">Net</th>
@@ -629,27 +593,21 @@
 
   <!-- JAVASCRIPT APP LOGIC -->
   <script>
-    // ----------------------------------------------------
-    // LOCALIZATION DICTIONARY (BANGLA & ENGLISH)
-    // ----------------------------------------------------
     const i18nData = {
       bn: {
         appName: 'GHI DMD',
-        subHeader: 'ঘি ও দুধ কালেকশন হিসাব ব্যবস্থাপনা',
+        subHeader: 'ঘি ও দুধ বিক্রয় হিসাব ম্যানেজমেন্ট',
         login: 'লগইন',
         register: 'রেজিস্ট্রেশন',
         mobileNumber: 'মোবাইল নম্বর',
         password: 'পাসওয়ার্ড',
-        loginAsAdmin: 'এডমিন হিসেবে চেষ্টা করুন',
         fullName: 'পূর্ণ নাম',
         email: 'ইমেইল',
-        registerNow: 'রেজিস্ট্রেশন করুন',
-        refreshStatus: 'স্ট্যাটাস চেক করুন',
+        registerNow: 'রেজিস্ট্রেশন ও প্রবেশ করুন',
         totalMembers: 'মোট সদস্য',
         totalCollected: 'মোট আদায় টাকা',
         totalReturned: 'মোট ফেরত টাকা',
         netCash: 'অবশিষ্ট নীট ক্যাশ',
-        adminPanelTitle: 'এডমিন প্যানেল: ইউজার অনুমোদন ব্যবস্থাপনা',
         exportReport: 'রিপোর্ট প্রসেস',
         addNewMember: 'নতুন নাম যোগ (Max 100)',
         noMembersYet: 'কোন সদস্য যুক্ত করা হয়নি',
@@ -664,21 +622,18 @@
       },
       en: {
         appName: 'GHI DMD',
-        subHeader: 'Ghee & Milk Collection Cash Manager',
+        subHeader: 'Ghee & Milk Sales Cash Management',
         login: 'Login',
         register: 'Register',
         mobileNumber: 'Mobile Number',
         password: 'Password',
-        loginAsAdmin: 'Try as Admin',
         fullName: 'Full Name',
         email: 'Email',
-        registerNow: 'Register Now',
-        refreshStatus: 'Check Status',
+        registerNow: 'Register & Enter',
         totalMembers: 'Total Members',
         totalCollected: 'Total Collected',
         totalReturned: 'Total Returned',
         netCash: 'Net Cash In Hand',
-        adminPanelTitle: 'Admin Panel: User Approval Management',
         exportReport: 'Process Report',
         addNewMember: 'Add Member (Max 100)',
         noMembersYet: 'No members added yet',
@@ -695,23 +650,15 @@
 
     let currentLang = 'bn';
     let membersData = [];
-    let pendingUsers = [];
     let pendingRegisterData = null;
 
-    // ----------------------------------------------------
-    // INITIALIZATION & STATE MANAGEMENT
-    // ----------------------------------------------------
     window.addEventListener('load', () => {
-      // Load Theme Preference
       if (localStorage.getItem('ghi_theme') === 'dark') {
         document.documentElement.classList.add('dark');
         document.body.classList.replace('app-bg-light', 'app-bg-dark');
       }
 
-      // Load Saved Local Storage Fallback Data if Firestore unavailable
       loadStoredData();
-
-      // Check current user session
       checkSavedSession();
     });
 
@@ -720,26 +667,13 @@
       if (storedMembers) {
         try { membersData = JSON.parse(storedMembers); } catch(e){}
       }
-      const storedPending = localStorage.getItem('ghi_pending_users');
-      if (storedPending) {
-        try { pendingUsers = JSON.parse(storedPending); } catch(e){}
-      } else {
-        // Mock default pending user for admin demonstration
-        pendingUsers = [
-          { name: 'Sainik Rafiq', mobile: '01711223344', time: '2026-10-21 10:15:30' }
-        ];
-      }
     }
 
     function saveLocalMembers() {
       localStorage.setItem('ghi_members', JSON.stringify(membersData));
-      localStorage.setItem('ghi_pending_users', JSON.stringify(pendingUsers));
       syncToFirebase();
     }
 
-    // ----------------------------------------------------
-    // CLOUD FIREBASE PERSISTENCE SYNC
-    // ----------------------------------------------------
     async function syncToFirebase() {
       if (!window.GHI_APP?.db || !window.GHI_APP?.currentUser) return;
       const db = window.GHI_APP.db;
@@ -747,7 +681,6 @@
       const appId = window.GHI_APP.appId;
 
       try {
-        // Save user specific data under correct mandatory rule path
         const userDocRef = doc(db, 'artifacts', appId, 'users', userId, 'data', 'cashRecords');
         await setDoc(userDocRef, {
           members: membersData,
@@ -775,14 +708,10 @@
       }
     }
 
-    // ----------------------------------------------------
-    // LANGUAGE & THEME TOGGLES
-    // ----------------------------------------------------
     function toggleLanguage() {
       currentLang = currentLang === 'bn' ? 'en' : 'bn';
       document.getElementById('langBtnText').textContent = currentLang === 'bn' ? 'EN' : 'বাংলা';
       
-      // Update i18n text elements
       document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
         if (i18nData[currentLang][key]) {
@@ -817,16 +746,11 @@
       }
     }
 
-    // ----------------------------------------------------
-    // AUTHENTICATION & LOGIN / REGISTRATION / ADMIN FLOW
-    // ----------------------------------------------------
     function switchAuthTab(tab) {
       const loginForm = document.getElementById('loginForm');
       const regForm = document.getElementById('registerForm');
       const tabLoginBtn = document.getElementById('tabLoginBtn');
       const tabRegisterBtn = document.getElementById('tabRegisterBtn');
-
-      document.getElementById('pendingApprovalView').classList.add('hidden');
 
       if (tab === 'login') {
         loginForm.classList.remove('hidden');
@@ -847,42 +771,10 @@
       e.preventDefault();
       const mobile = document.getElementById('loginMobile').value.trim();
       const pass = document.getElementById('loginPassword').value;
-      const isAdminTry = document.getElementById('adminLoginCheck').checked;
 
-      // Admin Login Check (01332858038 or explicit admin check)
-      if (isAdminTry || mobile === '01332858038') {
-        window.GHI_APP.currentUser = { name: 'Admin', mobile: mobile, role: 'admin' };
-        window.GHI_APP.userRole = 'admin';
-        window.GHI_APP.isApproved = true;
-        saveUserSession();
-        showDashboard();
-        return;
-      }
-
-      // Check registered approved list or user session
-      const registeredUsers = JSON.parse(localStorage.getItem('ghi_approved_users') || '[]');
-      const foundUser = registeredUsers.find(u => u.mobile === mobile && u.password === pass);
-
-      if (foundUser) {
-        window.GHI_APP.currentUser = foundUser;
-        window.GHI_APP.userRole = 'user';
-        window.GHI_APP.isApproved = true;
-        saveUserSession();
-        loadFromFirebase(mobile).then(() => showDashboard());
-      } else {
-        // Check if user is in pending list
-        const isPending = pendingUsers.some(u => u.mobile === mobile);
-        if (isPending) {
-          showPendingApprovalState();
-        } else {
-          // Default mock login entry for first-time session
-          window.GHI_APP.currentUser = { name: 'ব্যবহারকারী', mobile: mobile, role: 'user' };
-          window.GHI_APP.userRole = 'user';
-          window.GHI_APP.isApproved = true;
-          saveUserSession();
-          showDashboard();
-        }
-      }
+      window.GHI_APP.currentUser = { name: 'ব্যবহারকারী', mobile: mobile };
+      saveUserSession();
+      loadFromFirebase(mobile).then(() => showDashboard());
     }
 
     function handleRegisterSubmit(e) {
@@ -894,52 +786,31 @@
 
       pendingRegisterData = { name, mobile, email, password };
 
-      // Open SMS OTP Verification Modal
+      // Open OTP Verification Modal for instant login
       document.getElementById('smsTargetMobile').textContent = mobile;
       const code = Math.floor(1000 + Math.random() * 9000);
       document.getElementById('simulatedCode').textContent = code;
       document.getElementById('smsCodeModal').classList.remove('hidden');
     }
 
-    function verifySMSCodeAndRegister() {
+    function verifyOtpAndLoginInstantly() {
       const enteredCode = document.getElementById('smsInputCode').value.trim();
       const simCode = document.getElementById('simulatedCode').textContent;
 
       if (enteredCode !== simCode && enteredCode !== '8842') {
-        alert("ভুল সিকিউরিটি কোড! অনুগ্রহ করে সঠিকভাবে প্রবেশ করান।");
+        alert("ভুল OTP কোড! আবার চেষ্টা করুন।");
         return;
       }
 
       closeModal('smsCodeModal');
 
-      // Add to pending approval users
-      const timestamp = getFormattedTimestamp();
-      const newUser = { ...pendingRegisterData, time: timestamp };
-      pendingUsers.push(newUser);
-      saveLocalMembers();
-
-      // Show approval pending view
-      showPendingApprovalState();
-    }
-
-    function showPendingApprovalState() {
-      document.getElementById('loginForm').classList.add('hidden');
-      document.getElementById('registerForm').classList.add('hidden');
-      document.getElementById('pendingApprovalView').classList.remove('hidden');
-    }
-
-    function checkApprovalStatus() {
-      // Check if approved by admin
-      const approvedUsers = JSON.parse(localStorage.getItem('ghi_approved_users') || '[]');
-      const userMobile = pendingRegisterData?.mobile || document.getElementById('loginMobile').value;
-      const approved = approvedUsers.find(u => u.mobile === userMobile);
-
-      if (approved) {
-        alert("আপনার অ্যাকাউন্ট অনুমোদন দেয়া হয়েছে! এখন লগইন করুন।");
-        switchAuthTab('login');
-      } else {
-        alert("এখনও এডমিন অনুমোদন অপেক্ষমান রয়েছে। অনুগ্রহ করে এডমিনকে 01332858038 নম্বরে জানান।");
-      }
+      // Instant Login without approval
+      window.GHI_APP.currentUser = { 
+        name: pendingRegisterData.name, 
+        mobile: pendingRegisterData.mobile 
+      };
+      saveUserSession();
+      showDashboard();
     }
 
     function saveUserSession() {
@@ -951,7 +822,6 @@
       if (session) {
         try {
           window.GHI_APP.currentUser = JSON.parse(session);
-          window.GHI_APP.userRole = window.GHI_APP.currentUser.role || 'user';
           showDashboard();
         } catch(e){}
       }
@@ -965,102 +835,68 @@
       document.getElementById('userProfileNav').classList.add('hidden');
     }
 
-    // ----------------------------------------------------
-    // DASHBOARD & MEMBER MANAGEMENT
-    // ----------------------------------------------------
     function showDashboard() {
       document.getElementById('authSection').classList.add('hidden');
       document.getElementById('dashboardSection').classList.remove('hidden');
 
-      // Profile nav setup
       const userNav = document.getElementById('userProfileNav');
       userNav.classList.remove('hidden');
       document.getElementById('navUserName').textContent = window.GHI_APP.currentUser?.name || 'User';
-      document.getElementById('navUserBadge').textContent = window.GHI_APP.userRole === 'admin' ? 'Admin' : 'User';
-
-      // Admin panel visibility
-      if (window.GHI_APP.userRole === 'admin') {
-        document.getElementById('adminPanel').classList.remove('hidden');
-        renderAdminPendingUsers();
-      } else {
-        document.getElementById('adminPanel').classList.add('hidden');
-      }
 
       renderMembers();
     }
 
-    function renderAdminPendingUsers() {
-      const container = document.getElementById('pendingUsersList');
-      if (pendingUsers.length === 0) {
-        container.innerHTML = `<p class="text-xs text-slate-500 italic">কোন অপেক্ষমান আইডি নেই।</p>`;
-        return;
-      }
-
-      container.innerHTML = pendingUsers.map((user, idx) => `
-        <div class="flex items-center justify-between p-2.5 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 text-xs">
-          <div>
-            <span class="font-bold text-slate-800 dark:text-slate-100">${escapeHtml(user.name)}</span>
-            <span class="text-slate-500 text-[11px] ml-2">(${user.mobile})</span>
-            <p class="text-[10px] text-slate-400">রিকোয়েস্ট টাইম: ${user.time}</p>
-          </div>
-          <div class="flex space-x-1">
-            <button onclick="approveUser(${idx})" class="px-2.5 py-1 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700">
-              <i class="fa-solid fa-check mr-1"></i> Approve
-            </button>
-            <button onclick="rejectUser(${idx})" class="px-2 py-1 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 font-bold rounded-lg hover:bg-red-200">
-              Reject
-            </button>
-          </div>
-        </div>
-      `).join('');
-    }
-
-    function approveUser(idx) {
-      const user = pendingUsers[idx];
-      const approvedList = JSON.parse(localStorage.getItem('ghi_approved_users') || '[]');
-      approvedList.push(user);
-      localStorage.setItem('ghi_approved_users', JSON.stringify(approvedList));
-
-      pendingUsers.splice(idx, 1);
-      saveLocalMembers();
-      renderAdminPendingUsers();
-      alert(`আইডি ${user.name} অনুমোদিত হয়েছে!`);
-    }
-
-    function rejectUser(idx) {
-      pendingUsers.splice(idx, 1);
-      saveLocalMembers();
-      renderAdminPendingUsers();
-    }
-
-    // ----------------------------------------------------
-    // MEMBER DATA AND CASH DENOMINATION LOGIC
-    // ----------------------------------------------------
     function openAddMemberModal() {
       if (membersData.length >= 100) {
         alert("সর্বোচ্চ ১০০ জন সদস্যের লিমিট পূর্ণ হয়েছে!");
         return;
       }
       document.getElementById('addMemberForm').reset();
+      document.getElementById('editingMemberId').value = '';
+      document.getElementById('memberModalTitleText').textContent = "নতুন সদস্যের নাম ও পদবী যোগ";
+      document.getElementById('addMemberModal').classList.remove('hidden');
+    }
+
+    function openEditMemberModal(id) {
+      const member = membersData.find(m => m.id === id);
+      if (!member) return;
+
+      document.getElementById('editingMemberId').value = member.id;
+      document.getElementById('memberRank').value = member.rank;
+      document.getElementById('memberSainikNo').value = member.sainikNo;
+      document.getElementById('memberName').value = member.name;
+      document.getElementById('memberModalTitleText').textContent = "সদস্যের তথ্য সম্পাদন (Edit Member)";
       document.getElementById('addMemberModal').classList.remove('hidden');
     }
 
     function handleSaveMember(e) {
       e.preventDefault();
+      const editingId = document.getElementById('editingMemberId').value;
       const rank = document.getElementById('memberRank').value;
       const sainikNo = document.getElementById('memberSainikNo').value.trim();
       const name = document.getElementById('memberName').value.trim();
 
-      const newMember = {
-        id: 'mem_' + Date.now(),
-        rank: rank,
-        sainikNo: sainikNo,
-        name: name,
-        createdAt: getFormattedTimestamp(),
-        history: []
-      };
+      if (editingId) {
+        // Edit existing member
+        const member = membersData.find(m => m.id === editingId);
+        if (member) {
+          member.rank = rank;
+          member.sainikNo = sainikNo;
+          member.name = name;
+        }
+      } else {
+        // Add new member
+        const newMember = {
+          id: 'mem_' + Date.now(),
+          rank: rank,
+          sainikNo: sainikNo,
+          name: name,
+          createdAt: getFormattedTimestamp(),
+          history: []
+        };
+        membersData.unshift(newMember);
+      }
 
-      membersData.unshift(newMember);
       saveLocalMembers();
       closeModal('addMemberModal');
       renderMembers();
@@ -1073,18 +909,54 @@
       renderMembers();
     }
 
-    // Cash Entry Modal
     function openCashModal(memberId) {
       const member = membersData.find(m => m.id === memberId);
       if (!member) return;
 
       document.getElementById('cashMemberId').value = memberId;
+      document.getElementById('editingEntryId').value = '';
       document.getElementById('modalMemberTitle').textContent = `${member.rank} ${member.name} (${member.sainikNo})`;
-      document.getElementById('modalMemberSub').textContent = `টাকা জমা ও নোটের হিসাব এন্ট্রি`;
+      document.getElementById('modalMemberSub').textContent = `ঘি/দুধ পরিমাণ ও নোটের হিসাব এন্ট্রি`;
+      document.getElementById('cashModalSubmitText').textContent = "এন্ট্রি সেভ করুন";
 
       document.getElementById('cashForm').reset();
       calculateCashTotal();
       document.getElementById('cashCollectionModal').classList.remove('hidden');
+    }
+
+    function openEditCashModal(memberId, entryId) {
+      const member = membersData.find(m => m.id === memberId);
+      if (!member) return;
+      const entry = member.history.find(h => h.id === entryId);
+      if (!entry) return;
+
+      document.getElementById('cashMemberId').value = memberId;
+      document.getElementById('editingEntryId').value = entryId;
+      document.getElementById('modalMemberTitle').textContent = `${member.rank} ${member.name} - এন্ট্রি এডিট`;
+      document.getElementById('modalMemberSub').textContent = `পূর্ববর্তী এন্ট্রি সম্পাদন করুন`;
+      document.getElementById('cashModalSubmitText').textContent = "এন্ট্রি আপডেট করুন";
+
+      document.getElementById('itemType').value = entry.itemType || 'Ghee';
+      document.getElementById('itemQuantity').value = entry.quantity || 1;
+      document.getElementById('note1000').value = entry.notes?.n1000 || 0;
+      document.getElementById('note500').value  = entry.notes?.n500 || 0;
+      document.getElementById('note200').value  = entry.notes?.n200 || 0;
+      document.getElementById('note100').value  = entry.notes?.n100 || 0;
+      document.getElementById('note50').value   = entry.notes?.n50 || 0;
+      document.getElementById('cashReturned').value = entry.returned || 0;
+
+      calculateCashTotal();
+      document.getElementById('cashCollectionModal').classList.remove('hidden');
+    }
+
+    function deleteCashEntry(memberId, entryId) {
+      if (!confirm("আপনি কি এই কালেকশন এন্ট্রি মুছে ফেলতে চান?")) return;
+      const member = membersData.find(m => m.id === memberId);
+      if (member) {
+        member.history = member.history.filter(h => h.id !== entryId);
+        saveLocalMembers();
+        renderMembers();
+      }
     }
 
     function calculateCashTotal() {
@@ -1117,8 +989,12 @@
     function handleSaveCashEntry(e) {
       e.preventDefault();
       const memberId = document.getElementById('cashMemberId').value;
+      const editingEntryId = document.getElementById('editingEntryId').value;
       const member = membersData.find(m => m.id === memberId);
       if (!member) return;
+
+      const itemType = document.getElementById('itemType').value;
+      const quantity = parseFloat(document.getElementById('itemQuantity').value) || 0;
 
       const n1000 = parseInt(document.getElementById('note1000').value) || 0;
       const n500  = parseInt(document.getElementById('note500').value) || 0;
@@ -1128,29 +1004,43 @@
       const returned = parseInt(document.getElementById('cashReturned').value) || 0;
 
       const totalGiven = (n1000*1000) + (n500*500) + (n200*200) + (n100*100) + (n50*50);
-      if (totalGiven === 0 && returned === 0) {
-        alert("কমপক্ষে একটি নোট বা রিটার্ন টাকা ইনপুট দিন!");
+      if (totalGiven === 0 && returned === 0 && quantity === 0) {
+        alert("কমপক্ষে পরিমাণ অথবা নোট ইনপুট দিন!");
         return;
       }
 
-      const entry = {
-        id: 'entry_' + Date.now(),
-        timestamp: getFormattedTimestamp(), // Includes exact second
-        notes: { n1000, n500, n200, n100, n50 },
-        totalGiven: totalGiven,
-        returned: returned,
-        netAmount: totalGiven - returned
-      };
+      if (editingEntryId) {
+        // Update existing entry
+        const entry = member.history.find(h => h.id === editingEntryId);
+        if (entry) {
+          entry.itemType = itemType;
+          entry.quantity = quantity;
+          entry.notes = { n1000, n500, n200, n100, n50 };
+          entry.totalGiven = totalGiven;
+          entry.returned = returned;
+          entry.netAmount = totalGiven - returned;
+          entry.timestamp = getFormattedTimestamp() + ' (Edited)';
+        }
+      } else {
+        // Add new entry
+        const entry = {
+          id: 'entry_' + Date.now(),
+          timestamp: getFormattedTimestamp(),
+          itemType: itemType,
+          quantity: quantity,
+          notes: { n1000, n500, n200, n100, n50 },
+          totalGiven: totalGiven,
+          returned: returned,
+          netAmount: totalGiven - returned
+        };
+        member.history.unshift(entry);
+      }
 
-      member.history.unshift(entry);
       saveLocalMembers();
       closeModal('cashCollectionModal');
       renderMembers();
     }
 
-    // ----------------------------------------------------
-    // RENDER MEMBER CARDS AND METRICS
-    // ----------------------------------------------------
     function renderMembers() {
       const grid = document.getElementById('membersGrid');
       const emptyState = document.getElementById('emptyState');
@@ -1166,7 +1056,6 @@
         return matchesSearch && matchesRank;
       });
 
-      // Calculate Metrics
       membersData.forEach(m => {
         m.history.forEach(h => {
           grandTotalCollected += h.totalGiven;
@@ -1192,16 +1081,16 @@
       grid.innerHTML = filteredMembers.map(m => {
         let memGiven = 0;
         let memReturned = 0;
+        let totalQty = 0;
         m.history.forEach(h => {
           memGiven += h.totalGiven;
           memReturned += h.returned;
+          totalQty += (h.quantity || 0);
         });
         const memNet = memGiven - memReturned;
 
         return `
           <div class="glass-card rounded-2xl p-4 shadow-md border border-slate-200/80 dark:border-slate-800 flex flex-col justify-between relative overflow-hidden group">
-            
-            <!-- Top Member Header -->
             <div>
               <div class="flex items-start justify-between">
                 <div class="flex items-center space-x-2.5">
@@ -1213,72 +1102,86 @@
                     <p class="text-[11px] font-mono text-slate-500 dark:text-slate-400">সৈনিক নং: <span class="font-bold text-slate-700 dark:text-slate-300">${escapeHtml(m.sainikNo)}</span></p>
                   </div>
                 </div>
-                <button onclick="deleteMember('${m.id}')" class="text-slate-300 hover:text-red-500 text-xs p-1 transition" title="Delete Member">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
+                <div class="flex items-center space-x-1">
+                  <button onclick="openEditMemberModal('${m.id}')" class="text-slate-400 hover:text-emerald-600 text-xs p-1 transition" title="Edit Member">
+                    <i class="fa-solid fa-pen-to-square"></i>
+                  </button>
+                  <button onclick="deleteMember('${m.id}')" class="text-slate-300 hover:text-red-500 text-xs p-1 transition" title="Delete Member">
+                    <i class="fa-solid fa-trash"></i>
+                  </button>
+                </div>
               </div>
 
-              <!-- Cash Totals Summary Pill -->
-              <div class="grid grid-cols-3 gap-1 my-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center">
+              <!-- Quick Stats Grid including Quantity -->
+              <div class="grid grid-cols-4 gap-1 my-3 p-2 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/60 dark:border-slate-700/60 text-center">
                 <div>
-                  <span class="block text-[10px] text-slate-400">আদায় (Rec)</span>
+                  <span class="block text-[9px] text-slate-400">পরিমাণ (Qty)</span>
+                  <span class="text-xs font-bold text-blue-600 dark:text-blue-400">${totalQty}</span>
+                </div>
+                <div>
+                  <span class="block text-[9px] text-slate-400">আদায় (Rec)</span>
                   <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">৳${memGiven}</span>
                 </div>
                 <div>
-                  <span class="block text-[10px] text-slate-400">ফেরত (Ret)</span>
+                  <span class="block text-[9px] text-slate-400">ফেরত (Ret)</span>
                   <span class="text-xs font-bold text-amber-600 dark:text-amber-400">৳${memReturned}</span>
                 </div>
                 <div>
-                  <span class="block text-[10px] text-slate-400">নীট (Net)</span>
+                  <span class="block text-[9px] text-slate-400">নীট (Net)</span>
                   <span class="text-xs font-black text-teal-600 dark:text-teal-400">৳${memNet}</span>
                 </div>
               </div>
 
-              <!-- Entry History Accordion / Timeline Log -->
               <div class="mt-2 space-y-1.5 max-h-36 overflow-y-auto pr-1">
-                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">কালেকশন হিস্ট্রি (সহ সেকেন্ড):</p>
+                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">কালেকশন হিস্ট্রি ও এডিট অপশন:</p>
                 ${m.history.length === 0 ? `<p class="text-[11px] text-slate-400 italic">কোন হিস্ট্রি এন্ট্রি নেই</p>` : 
                   m.history.map(h => `
                     <div class="p-2 rounded-lg bg-white/60 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800 text-[11px] space-y-1">
                       <div class="flex justify-between items-center">
                         <span class="font-mono text-[10px] text-slate-500"><i class="fa-solid fa-clock text-[9px] mr-1"></i>${h.timestamp}</span>
-                        <span class="font-bold text-emerald-600 dark:text-emerald-400">+৳${h.netAmount}</span>
+                        <div class="flex items-center space-x-1.5">
+                          <span class="font-bold text-emerald-600 dark:text-emerald-400">+৳${h.netAmount}</span>
+                          <button onclick="openEditCashModal('${m.id}', '${h.id}')" class="text-blue-500 hover:text-blue-700 text-[10px] px-1" title="Edit Entry"><i class="fa-solid fa-pen"></i></button>
+                          <button onclick="deleteCashEntry('${m.id}', '${h.id}')" class="text-red-400 hover:text-red-600 text-[10px] px-1" title="Delete Entry"><i class="fa-solid fa-xmark"></i></button>
+                        </div>
                       </div>
-                      <div class="flex flex-wrap gap-1 text-[9px] text-slate-600 dark:text-slate-400 font-mono">
-                        ${h.notes.n1000 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">1000x${h.notes.n1000}</span>` : ''}
-                        ${h.notes.n500 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">500x${h.notes.n500}</span>` : ''}
-                        ${h.notes.n200 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">200x${h.notes.n200}</span>` : ''}
-                        ${h.notes.n100 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">100x${h.notes.n100}</span>` : ''}
-                        ${h.notes.n50 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">50x${h.notes.n50}</span>` : ''}
-                        ${h.returned > 0 ? `<span class="bg-amber-100 text-amber-800 px-1 rounded font-bold">ফেরত: ৳${h.returned}</span>` : ''}
+                      <div class="flex flex-wrap items-center justify-between text-[10px] text-slate-600 dark:text-slate-400 font-mono pt-1 border-t border-slate-200/50 dark:border-slate-800">
+                        <span class="bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-1.5 py-0.5 rounded font-bold">${h.itemType}: ${h.quantity} KG/L</span>
+                        <div class="flex gap-1">
+                          ${h.notes.n1000 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">1000x${h.notes.n1000}</span>` : ''}
+                          ${h.notes.n500 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">500x${h.notes.n500}</span>` : ''}
+                          ${h.notes.n200 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">200x${h.notes.n200}</span>` : ''}
+                          ${h.notes.n100 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">100x${h.notes.n100}</span>` : ''}
+                          ${h.notes.n50 ? `<span class="bg-slate-200 dark:bg-slate-800 px-1 rounded">50x${h.notes.n50}</span>` : ''}
+                        </div>
                       </div>
+                      ${h.returned > 0 ? `<div class="text-[9px] text-amber-600 dark:text-amber-400 font-bold">ফেরত দেওয়া হয়েছে: ৳${h.returned}</div>` : ''}
                     </div>
                   `).join('')
                 }
               </div>
             </div>
 
-            <!-- Action Button -->
             <button onclick="openCashModal('${m.id}')" class="mt-3 w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition flex items-center justify-center">
-              <i class="fa-solid fa-plus-circle mr-1.5"></i> টাকা কালেকশন এড করুন
+              <i class="fa-solid fa-plus-circle mr-1.5"></i> পরিমাণ ও টাকা কালেকশন এড করুন
             </button>
-
           </div>
         `;
       }).join('');
     }
 
-    // ----------------------------------------------------
-    // EXPORT & REPORT GENERATION
-    // ----------------------------------------------------
     function openExportModal() {
       document.getElementById('reportDateStamp').textContent = `রিপোর্ট তৈরির সময়: ${getFormattedTimestamp()}`;
       const tbody = document.getElementById('exportTableBody');
 
       tbody.innerHTML = membersData.map((m, i) => {
-        let memGiven = 0, memReturned = 0;
+        let memGiven = 0, memReturned = 0, totalQty = 0;
         let lastTime = m.history.length > 0 ? m.history[0].timestamp : '-';
-        m.history.forEach(h => { memGiven += h.totalGiven; memReturned += h.returned; });
+        m.history.forEach(h => { 
+          memGiven += h.totalGiven; 
+          memReturned += h.returned; 
+          totalQty += (h.quantity || 0);
+        });
 
         return `
           <tr>
@@ -1286,6 +1189,7 @@
             <td class="p-2 border border-slate-200 font-bold">${escapeHtml(m.rank)}</td>
             <td class="p-2 border border-slate-200 font-mono">${escapeHtml(m.sainikNo)}</td>
             <td class="p-2 border border-slate-200 font-bold">${escapeHtml(m.name)}</td>
+            <td class="p-2 border border-slate-200 font-bold text-blue-700">${totalQty} KG/L</td>
             <td class="p-2 border border-slate-200 text-right text-emerald-700 font-bold">৳${memGiven}</td>
             <td class="p-2 border border-slate-200 text-right text-amber-700">৳${memReturned}</td>
             <td class="p-2 border border-slate-200 text-right font-black text-teal-800">৳${memGiven - memReturned}</td>
@@ -1299,14 +1203,18 @@
 
     function downloadCSVReport() {
       let csvContent = "data:text/csv;charset=utf-8,";
-      csvContent += "SL,Rank,Sainik No,Name,Collected,Returned,Net,Last Timestamp\n";
+      csvContent += "SL,Rank,Sainik No,Name,Total Qty,Collected,Returned,Net,Last Timestamp\n";
 
       membersData.forEach((m, i) => {
-        let memGiven = 0, memReturned = 0;
+        let memGiven = 0, memReturned = 0, totalQty = 0;
         let lastTime = m.history.length > 0 ? m.history[0].timestamp : '-';
-        m.history.forEach(h => { memGiven += h.totalGiven; memReturned += h.returned; });
+        m.history.forEach(h => { 
+          memGiven += h.totalGiven; 
+          memReturned += h.returned; 
+          totalQty += (h.quantity || 0);
+        });
         
-        csvContent += `${i+1},"${m.rank}","${m.sainikNo}","${m.name}",${memGiven},${memReturned},${memGiven - memReturned},"${lastTime}"\n`;
+        csvContent += `${i+1},"${m.rank}","${m.sainikNo}","${m.name}",${totalQty},${memGiven},${memReturned},${memGiven - memReturned},"${lastTime}"\n`;
       });
 
       const encodedUri = encodeURI(csvContent);
@@ -1318,9 +1226,6 @@
       document.body.removeChild(link);
     }
 
-    // ----------------------------------------------------
-    // UTILITY HELPER FUNCTIONS
-    // ----------------------------------------------------
     function getFormattedTimestamp() {
       const now = new Date();
       const year = now.getFullYear();
